@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.enbiz.api.bo.app.repository.main.display.PrDispGrpBaseMapper">
+
+	<sql id="paginatedBase">
+		LIMIT ${rowsPerPage} OFFSET (${pageIdx} - 1) * ${rowsPerPage}
+	</sql>
+
+	<!-- 기획전 그룹 목록 조회 SQL -->
+	<sql id="prDispGrpBaseListSql">
+		SELECT
+			DISP_GRP_TYP_CD        	-- 전시그룹유형코드(DP011)
+			, DISP_GRP_NO          	-- 전시그룹번호
+			, DISP_GRP_NM          	-- 전시그룹명
+			, SITE_NO              	-- 사이트번호
+			, DPML_NO              	-- 전시몰번호
+			, DISP_SEQ             	-- 전시순서
+			, USE_YN               	-- 사용여부
+			, TO_CHAR(APLY_STR_DTM, 'YYYY-MM-DD') AS APLY_STR_DTM         	-- 적용시작일자
+			, TO_CHAR(APLY_END_DTM, 'YYYY-MM-DD') AS APLY_END_DTM         	-- 적용종료일자
+			, DISP_GRP_DESC        	-- 전시그룹설명
+			, SYS_REG_ID           	-- 시스템등록자ID
+			, TO_CHAR(SYS_REG_DTM, 'YYYY-MM-DD HH24:MI:SS') AS SYS_REG_DTM          	-- 시스템등록일시
+			, SYS_MOD_ID           	-- 시스템수정자ID
+			, TO_CHAR(SYS_MOD_DTM, 'YYYY-MM-DD HH24:MI:SS') AS SYS_MOD_DTM          	-- 시스템수정일시
+		FROM PR_DISP_GRP_BASE
+		WHERE SITE_NO		= #{srchSiteNo}			-- 사이트번호
+            <if test="srchDispGrpNo != null and srchDispGrpNo != ''">
+		  		AND DISP_GRP_NO	=  #{srchDispGrpNo}	-- 기획전번호
+            </if>
+            <if test="srchStartDate != null and srchStartDate != ''">
+          		AND APLY_STR_DTM <![CDATA[ >= ]]> TO_TIMESTAMP(#{srchStartDate}||'000000', 'YYYYMMDDHH24MISS')	-- 전시기간 시작일시
+            </if>
+            <if test="srchEndDate != null and srchEndDate != ''">
+          		AND APLY_END_DTM <![CDATA[ <= ]]> TO_TIMESTAMP(#{srchEndDate}||'235959', 'YYYYMMDDHH24MISS')	-- 전시기간 적용종료일시
+            </if>
+		  AND DISP_GRP_NM	LIKE #{srchDispGrpNm} || '%'		-- 기획전명
+		ORDER BY DISP_GRP_NO ASC
+	</sql>
+
+	<!-- 기획전 그룹 목록 Count -->
+	<select id="getPrDispGrpBaseListCount" parameterType="PrDispGrpBaseRequest" resultType="java.lang.Integer">
+		SELECT
+				COUNT(*)
+		FROM (
+				<include refid="prDispGrpBaseListSql" />
+		) T1
+	</select>
+
+	<!-- 기획전 그룹 목록 조회 -->
+	<select id="getPrDispGrpBaseList" parameterType="PrDispGrpBaseRequest" resultType="PrDispGrpBaseRespons">
+		<include refid="prDispGrpBaseListSql" />
+	</select>
+
+	<!-- 기획전그룹 목록 등록(param: PrDispGrpBaseRequest) -->
+	<insert id="insertPrDispGrpBaseList" parameterType="java.util.List">
+		INSERT INTO PR_DISP_GRP_BASE (
+			DISP_GRP_TYP_CD
+			, DISP_GRP_NO
+			, DISP_GRP_NM
+			, SITE_NO
+			, DPML_NO
+			, DISP_SEQ
+			, USE_YN
+			, APLY_STR_DTM
+			, APLY_END_DTM
+			, DISP_GRP_DESC
+			, SYS_REG_ID
+			, SYS_REG_DTM
+			, SYS_MOD_ID
+			, SYS_MOD_DTM
+		) VALUES
+		<foreach collection="list" item="item" separator=",">
+			(
+				#{item.dispGrpTypCd}						-- 전시그룹유형코드(DP011)
+				, (SELECT NEXTVAL('PR_DISP_GRP_BASE_SQ01'))	-- 전시그룹번호
+				, #{item.dispGrpNm}							-- 전시그룹명
+				, #{item.siteNo}							-- 사이트번호
+				, #{item.dpmlNo}							-- 전시몰번호
+				, CAST(#{item.dispSeq} AS INTEGER)			-- 전시순서
+				, #{item.useYn}								-- 사용여부
+				, #{item.aplyStrDtm}::timestamp				-- 적용시작일시
+				, #{item.aplyEndDtm}::timestamp				-- 적용종료일시
+				, #{item.dispGrpDesc}						-- 전시그룹설명
+				, #{item.sysRegId}							-- 시스템등록자ID
+				, now()										-- 시스템등록일시
+				, #{item.sysModId}							-- 시스템수정자ID
+				, now()										-- 시스템수정일시
+			)
+		</foreach>
+	</insert>
+
+	<!-- 기획전 그룹 목록 수정(param:PrDispGrpBaseRequest) -->
+	<update id="updatePrDispGrpBaseList" parameterType="java.util.List">
+		<foreach collection="list" item="item" separator=";">
+			UPDATE
+				PR_DISP_GRP_BASE
+			SET
+				DISP_GRP_NM = #{item.dispGrpNm}					-- 전시그룹명
+				, SITE_NO = #{item.siteNo}						-- 사이트번호
+				, DPML_NO = #{item.dpmlNo}						-- 전시몰번호
+				, DISP_SEQ = CAST(#{item.dispSeq} AS INTEGER)	-- 전시순서
+				, USE_YN = #{item.useYn}						-- 사용여부
+				, APLY_STR_DTM = #{item.aplyStrDtm}::timestamp	-- 적용시작일시
+				, APLY_END_DTM = #{item.aplyEndDtm}::timestamp	-- 적용종료일시
+				, DISP_GRP_DESC = #{item.dispGrpDesc}			-- 전시그룹설명
+				, SYS_MOD_ID = #{item.sysModId}					-- 시스템수정자ID
+				, SYS_MOD_DTM = NOW()							-- 시스템수정일시
+			WHERE DISP_GRP_TYP_CD = #{item.dispGrpTypCd}		-- 전시그룹유형코드(DP011)
+			  AND DISP_GRP_NO = #{item.dispGrpNo}				-- 전시그룹번호
+		</foreach>
+	</update>
+
+	<!-- 기획전 그룹 목록 삭제(PrDispGrpBaseRequest)  -->
+	<delete id="deletePrDispGrpBaseList" parameterType="java.util.List">
+		DELETE
+		FROM
+			PR_DISP_GRP_BASE
+		<where>
+			<foreach collection="list" item="item" open="" close="" separator="OR">
+				(
+					DISP_GRP_TYP_CD = #{item.dispGrpTypCd}		-- 기획전번호
+					AND DISP_GRP_NO = #{item.dispGrpNo}			-- 전시그룹번호
+				)
+			</foreach>
+		</where>
+	</delete>
+
+
+	<!-- 기획전 목록 조회 SQL -->
+	<sql id="prDispGrpMappInfoListSql">
+		SELECT
+			M.DISP_GRP_TYP_CD		-- 전시그룹유형코드(DP011)	varchar(10) NOT NULL
+		    , FN_GET_CODENAME( 'DP008', M.DISP_GRP_TYP_CD ) AS  DISP_GRP_TYP_NM			-- 기획전유형코드명(DP008)	varchar(10) Not Null
+			, M.DISP_GRP_NO			-- 전시그룹번호			varchar(15) NOT NULL
+			, M.DISP_SHOP_GB_CD		-- 전시매장구분코드(DP012)	varchar(10) NOT NULL
+			, B.MKDP_NM				-- 기획전명				varchar(300) NOT NULL
+			, M.SHOP_CTG_NO			-- 매장카테고리번호			varchar(15) NOT NULL
+		    , CASE
+		    		WHEN DISP_STR_DTM <![CDATA[> ]]> NOW()	AND DISP_END_DTM <![CDATA[> ]]>	NOW() 	THEN '10'
+		    		WHEN DISP_STR_DTM <![CDATA[<=]]> NOW()	AND DISP_END_DTM <![CDATA[>=]]> NOW() 	THEN '20'
+		    		WHEN DISP_STR_DTM <![CDATA[< ]]> NOW() 	AND DISP_END_DTM <![CDATA[< ]]>	NOW()	THEN '30'
+		    	END AS DISP_STAT
+		    , CASE
+		    		WHEN DISP_STR_DTM <![CDATA[> ]]> NOW()	AND DISP_END_DTM <![CDATA[> ]]>	NOW() 	THEN '준비중'
+		    		WHEN DISP_STR_DTM <![CDATA[<=]]> NOW()	AND DISP_END_DTM <![CDATA[>=]]> NOW() 	THEN '진행중'
+		    		WHEN DISP_STR_DTM <![CDATA[< ]]> NOW() 	AND DISP_END_DTM <![CDATA[< ]]>	NOW()	THEN '종료'
+		    	END AS DISP_STAT_NAME
+			, M.DISP_SEQ			-- 전시순서				numeric(5) 	NOT NULL DEFAULT 0
+			, M.USE_YN				-- 사용여부				varchar(1) 	NOT NULL
+			, B.DISP_STR_DTM		-- 전시시작일시			timestamp NOT NULL
+			, B.DISP_END_DTM		-- 전시종료일시			timestamp NOT NULL
+			, M.SYS_REG_ID			-- 시스템등록자ID			varchar(30) NOT NULL
+			, M.SYS_REG_DTM			-- 시스템등록일시			timestamp 	NOT NULL
+			, M.SYS_MOD_ID			-- 시스템수정자ID			varchar(30) NOT NULL
+			, M.SYS_MOD_DTM			-- 시스템수정일시			timestamp 	NOT NULL
+			, B.MD_ID 				-- MD아이디				varchar(10) NULL
+		    , (
+		    	SELECT USER_NM
+		    	FROM ST_USER_BASE
+		    	WHERE USER_ID = B.MD_ID
+		    	  AND USER_GB_CD = '10'
+		    	  AND JOB_GRP_CD = '13'
+		    	  AND WORK_STAT_CD = '01'
+		    	  AND USE_YN = 'Y'
+			) AS MD_NM				-- MD명
+		FROM
+			PR_DISP_GRP_MAPP_INFO M
+			LEFT OUTER JOIN (
+				SELECT
+					MKDP_NO			-- 기획전번호				varchar(15) NOT NULL
+					, MKDP_NM 		-- 기획전명				varchar(300) NOT NULL
+					, DISP_STR_DTM	-- 전시시작일시			timestamp NOT NULL
+					, DISP_END_DTM	-- 전시종료일시			timestamp NOT NULL
+					, MD_ID 		-- MD아이디				varchar(10) NULL
+				FROM PR_MKDP_BASE
+			) B
+            ON M.SHOP_CTG_NO = B.MKDP_NO	--기획전번호(매장카테고리번호)
+		WHERE DISP_GRP_TYP_CD       = #{dispGrpTypCd}		-- 전시그룹유형코드(DP011)(01:대표기획전)	varchar(10) Not Null
+		  AND DISP_GRP_NO     		= #{dispGrpNo}			-- 전시그룹번호						varchar(15) Not Null
+		  AND DISP_SHOP_GB_CD 		= #{dispShopGbCd}		-- 전시매장구분코드(DP012)(02:기획전) 	varchar(10) Not Null
+		ORDER BY DISP_GRP_NO ASC
+	</sql>
+
+	<!-- 기획전 목록 수 조회 Count -->
+	<select id="getPrDispGrpMappInfoListCount" parameterType="PrDispGrpMappInfoRequest" resultType="java.lang.Integer">
+		SELECT
+				COUNT(*)
+		FROM (
+				<include refid="prDispGrpMappInfoListSql" />
+		) T1
+	</select>
+
+	<!-- 기획전 목록 조회 -->
+	<select id="getPrDispGrpMappInfoList" parameterType="PrDispGrpMappInfoRequest" resultType="PrDispGrpMappInfoRespons">
+		<include refid="prDispGrpMappInfoListSql" />
+	</select>
+
+	<!-- 기획전 목록 등록(param:PrDispGrpMappInfoRequest) -->
+	<insert id="insertPrDispGrpMappInfoList" parameterType="java.util.List">
+		INSERT INTO PR_DISP_GRP_MAPP_INFO (
+			disp_grp_typ_cd
+			, disp_grp_no
+			, disp_shop_gb_cd
+			, shop_ctg_no
+			, disp_seq
+			, use_yn
+			, sys_reg_id
+			, sys_reg_dtm
+			, sys_mod_id
+			, sys_mod_dtm
+		) VALUES
+		<foreach collection="list" item="item" separator=",">
+			(
+				#{item.dispGrpTypCd}				-- 전시그룹유형코드(DP011)(01:대표기획전)	varchar(10) Not Null
+				, #{item.dispGrpNo}					-- 전시그룹번호 varchar(15) NOT NULL
+				, #{item.dispShopGbCd}				-- 전시매장구분코드(DP012)(02:기획전) 	varchar(10) NOT NULL
+				, #{item.shopCtgNo}					-- 매장카테고리번호 varchar(15) NOT NULL
+				, CAST(#{item.dispSeq} AS INTEGER)	-- 전시순서 numeric(5) NOT NULL DEFAULT 0
+				, #{item.useYn}						-- 사용여부varchar(1) NOT NULL
+				, #{item.sysRegId}					-- 시스템등록자IDvarchar(30) NOT NULL
+				, now()								-- 시스템등록일시timestamp NOT NULL
+				, #{item.sysModId}					-- 시스템수정자IDvarchar(30) NOT NULL
+				, now()								-- 시스템수정일시timestamp NOT NULL
+			)
+		</foreach>
+	</insert>
+
+	<!-- 기획전 목록 수정(param:PrDispGrpMappInfoRequest) -->
+	<update id="updatePrDispGrpMappInfoList" parameterType="java.util.List">
+		<foreach collection="list" item="item" separator=";">
+			UPDATE
+				PR_DISP_GRP_MAPP_INFO
+			SET
+				DISP_SEQ = CAST(#{item.dispSeq} AS INTEGER)		-- 전시순서				numeric(5) NOT NULL DEFAULT 0
+				, USE_YN = #{item.useYn}						-- 사용여부				varchar(1) NOT NULL
+				, SYS_MOD_ID = #{item.sysModId}					-- 시스템수정자ID			varchar(30) NOT NULL
+				, SYS_MOD_DTM = now()							-- 시스템수정일시			timestamp NOT NULL
+			WHERE DISP_GRP_TYP_CD = #{item.dispGrpTypCd}		-- 전시그룹유형코드(DP011)(01:대표기획전)	varchar(10) Not Null
+			  and DISP_GRP_NO = #{item.dispGrpNo}				-- 전시그룹번호			varchar(15) NOT NULL
+			  and DISP_SHOP_GB_CD = #{item.dispShopGbCd}		-- 전시매장구분코드(DP012)(02:기획전) 	varchar(10) NOT NULL
+			  and SHOP_CTG_NO = #{item.shopCtgNo}				-- 매장카테고리번호			varchar(15) NOT NULL
+		</foreach>
+	</update>
+
+	<!-- 기획전 목록 삭제(param:PrDispGrpMappInfoRequest) -->
+	<delete id="deletePrDispGrpMappInfoList" parameterType="java.util.List">
+		DELETE
+		FROM
+			PR_DISP_GRP_MAPP_INFO
+		<where>
+			<foreach collection="list" item="item" open="" close="" separator="OR">
+				(
+					DISP_GRP_TYP_CD = #{item.dispGrpTypCd}			-- 전시그룹유형코드(DP011)(01:대표기획전)	varchar(10) Not Null
+			 		and DISP_GRP_NO = #{item.dispGrpNo}				-- 전시그룹번호						varchar(15) NOT NULL
+			  		and DISP_SHOP_GB_CD = #{item.dispShopGbCd}		-- 전시매장구분코드(DP012)(02:기획전) 	varchar(10) NOT NULL
+			  		and SHOP_CTG_NO = #{item.shopCtgNo}				-- 매장카테고리번호						varchar(15) NOT NULL
+				)
+			</foreach>
+		</where>
+	</delete>
+
+	<!-- 기획전 목록 조회 SQL -->
+	<sql id="getMarketDisplayListSql">
+		<![CDATA[
+		SELECT
+		    MKDP_NO																-- 기획전번호				varchar(15) Not Null
+		    , MKDP_NM															-- 기획전명				varchar(300) Not Null
+		    , SITE_NO															-- 사이트번호				varchar(15) Not Null
+		    , MKDP_TYP_CD														-- 기획전유형코드(DP008)	varchar(10) Not Null
+		    , FN_GET_CODENAME( 'DP008', MKDP_TYP_CD ) AS  MKDP_TYP_NM			-- 기획전유형코드명(DP008)	varchar(10) Not Null
+		    , TMPL_NO															-- 템플릿번호				varchar(15) Not Null
+		    , (CASE WHEN DISP_YN='Y' THEN '전시' ELSE '전시안함' END) AS DISP_YN 	-- 전시여부				varchar(1) Not Null
+		    , CASE
+		    		WHEN DISP_STR_DTM >  NOW()	AND DISP_END_DTM > 	NOW() 	THEN '10'
+		    		WHEN DISP_STR_DTM <= NOW()	AND DISP_END_DTM >= NOW() 	THEN '20'
+		    		WHEN DISP_STR_DTM <	 NOW() 	AND DISP_END_DTM <	NOW()	THEN '30'
+		    	END AS DISP_STAT
+		    , CASE
+		    		WHEN DISP_STR_DTM >  NOW()	AND DISP_END_DTM > 	NOW() 	THEN '준비중'
+		    		WHEN DISP_STR_DTM <= NOW()	AND DISP_END_DTM >= NOW() 	THEN '진행중'
+		    		WHEN DISP_STR_DTM <	 NOW() 	AND DISP_END_DTM <	NOW()	THEN '종료'
+		    	END AS DISP_STAT_NAME
+		    , DISP_SEQ															-- 전시순서				varchar(5) Not Null Default 0
+		    , TO_CHAR(DISP_STR_DTM,'YYYY-MM-DD HH24:MI:SS') AS DISP_STR_DTM		-- 전시시작일시			timestamp Not Null
+		    , TO_CHAR(DISP_END_DTM,'YYYY-MM-DD HH24:MI:SS') AS DISP_END_DTM		-- 전시종료일시			timestamp Not Null
+		    , MKDP_LIST_PRT_CNT													-- 기획전리스트출력수		varchar(10) Not Null Default 0
+		    , MD_ID																-- Md아이디				varchar(10) Null
+		    , (
+		    	SELECT USER_NM
+		    	FROM ST_USER_BASE
+		    	WHERE USER_ID = MD_ID
+		    	  AND USER_GB_CD = '10'
+		    	  AND JOB_GRP_CD = '13'
+		    	  AND WORK_STAT_CD = '01'
+		    	  AND USE_YN = 'Y'
+			) AS MD_NM
+		    , MKDP_TTL_HTML 		-- 기획전타이틀html		text Null
+		    , KWD_1_NM				-- 키워드1명				varchar(300) Null
+		    , KWD_2_NM				-- 키워드2명				varchar(300) Null
+		    , KWD_3_NM				-- 키워드3명				varchar(300) Null
+		    , SYS_REG_ID			-- 시스템등록자id			varchar(30) Not Null
+		    , SYS_REG_DTM			-- 시스템등록일시			varchar Not Null
+		    , SYS_MOD_ID			-- 시스템수정자id			varchar(30) Not Null
+		    , SYS_MOD_DTM			-- 시스템수정일시			varchar NOT NULL
+		FROM PR_MKDP_BASE
+		]]>
+		<where>
+            <if test="mkdpTypCd != null and mkdpTypCd != ''">
+		  		AND MKDP_TYP_CD	=  #{mkdpTypCd}	-- 기획전유형코드(DP008)	varchar(10) Not Null
+            </if>
+            <if test="dispStat == '10'"><!-- 준비중 -->
+          		AND DISP_STR_DTM <![CDATA[ > ]]> NOW()	-- 전시시작일시
+				AND DISP_END_DTM <![CDATA[ > ]]> NOW()	-- 전시종료일시
+            </if>
+            <if test="dispStat == '20'"><!-- 진행중 -->
+          		AND DISP_STR_DTM <![CDATA[ <= ]]> NOW()	-- 전시시작일시
+          		AND DISP_END_DTM <![CDATA[ >= ]]> NOW()	-- 전시종료일시
+            </if>
+			<if test="dispStat == '30'"><!-- 종료 -->
+				AND DISP_STR_DTM <![CDATA[ < ]]> NOW()	-- 전시시작일시
+				AND DISP_END_DTM <![CDATA[ < ]]> NOW()	-- 전시종료일시
+			</if>
+			<if test="dispStatList == '10,20'"><!-- 준비중, 진행중인 경우 -->
+				AND DISP_END_DTM <![CDATA[ >= ]]> NOW()	-- 전시종료일시
+			</if>
+            <if test="mkdpNo != null and mkdpNo != ''">
+		  		AND MKDP_NO	=  #{mkdpNo}				-- 기획전번호	varchar(15) Not Null
+            </if>
+		  		AND MKDP_NM	LIKE  #{mkdpNm}||'%'		-- 기획전명	varchar(300) Not Null
+            <if test="mdId != null and mdId != ''">
+		  		AND MD_ID	=  #{mdId}					-- Md아이디	varchar(10) Null
+            </if>
+		</where>
+		ORDER BY DISP_SEQ ASC
+	</sql>
+
+	<!-- 기획전 수 조회 Count -->
+	<select id="getMarketDisplayListCount" parameterType="PrMkdpBaseRequest" resultType="java.lang.Integer">
+		SELECT
+				COUNT(*)
+		FROM (
+				<include refid="getMarketDisplayListSql" />
+		) T1
+	</select>
+
+	<!-- 기획전 조회 -->
+	<select id="getMarketDisplayList" parameterType="PrMkdpBaseRequest" resultType="PrMkdpBaseResponse">
+		<include refid="getMarketDisplayListSql" />
+		<include refid="paginatedBase" />
+	</select>
+</mapper>

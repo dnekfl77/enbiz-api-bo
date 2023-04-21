@@ -1,0 +1,174 @@
+#
+# Global setting
+###########################################
+spring:
+  profiles:
+    active: local
+  application:
+    name: enbiz-api-bo
+  web:
+    locale: ko
+  messages:
+    basename:
+      message.main.dashboard,
+      message.admin.adminCommon,
+      message.common.common,
+      message.entity.etMbrDlvpInfo,
+      message.delivery.deliveryManagement,
+      message.vendor.vendorMgmt,
+      message.display.siteMgmt,
+      message.display.footerMgmt,
+      message.display.termsConditionsMgmt,
+      message.display.sitePopupMgmt,
+      message.display.displayTemplateMgmt,
+      message.display.displayCornerMgmt,
+      message.display.displayCategoryManagement,
+      message.display.displayConnectManagement,
+      message.display.displayExhibitionGroupManagement,
+      message.display.marketingDisplayManagement,
+      message.customer.customerMgmt,
+      message.customer.watchCustomerMgmt,
+      message.customer.dormantCustomerInquiry,
+      message.customerservice.customerCompensMgmt,
+      message.customerservice.customerCompensPayMgmt,
+      message.customerservice.integratedCounselMgmt,
+      message.customerservice.phoneAppointmentMgmt,
+      message.customerservice.csTransferProcessing,
+      message.customerservice.counselingTemplateMgmt,
+      message.customerservice.counselingTypeMgmt,
+      message.customerservice.inquiryTypeMgmt,
+      message.customerservice.rewardTypeMgmt,
+      message.customerservice.obTypeMgmt,
+      message.customerservice.transferTypeMgmt,
+      message.customerservice.csAllocationMgmt,
+      message.order.manualOrder.goodsSearch,
+      message.order.orderReception,
+      message.payment.methodsOfPaymentManagement,
+      message.goods.generalGoods,
+      message.goods.packageGoods,
+      message.goods.reviewMgmt,
+      message.goods.goodsInfoManagement,
+      message.goods.stdCtgDispCtgMapp,
+      message.goods.goodsQAMgmt,
+      message.goods.brandMgmt,
+      message.goods.goodsQATemplateMgmt,
+      message.goods.reviewEvaluationItemMgmt,
+      message.goods.goodsInfoModificationHistory,
+      message.goods.webStockMgmt,
+      message.goods.AdvertisingWordMgmt,
+      message.goods.goodsItemMgmt,
+      message.goods.reservationGoodsMgmt,
+      message.goods.optionMgmt,
+      message.marketing.couponMgmt,
+      message.marketing.couponCostMgmt,
+      message.marketing.promotionMgmt,
+      message.marketing.presentationMgmt,
+      message.marketing.appreciationEventMgmt,
+      message.marketing.noticeMessageMgmt,
+      message.system.menuMgmt,
+      message.system.baseInfoMgmt,
+      message.system.stUserBase,
+      message.system.userMgmt,
+      message.system.system,
+      message.system.holidayMgmt,
+      message.system.zipNoMgmt,
+      message.system.badWordMgmt,
+      message.system.commonCodeMgmt,
+      message.system.systemNoticeMgmt,
+      message.system.customerNoticeMgmt,
+      message.system.faqMgmt,
+      message.system.receiveGroupMgmt,
+      message.system.userDeptMgmt,
+      message.system.userRtGroupMgmt,
+      message.system.menuUsageStatusInquiry,
+      message.system.userAccessHistoryInquiry,
+      message.system.userFavoriteMenuMgmt,
+      message.system.passwordChange
+  cache:
+    jcache:
+      config: classpath:ehcache.xml
+
+debug: true
+
+app:
+  lang: 
+    defaultCntryCd: KR
+    defaultSystemLanguage: ko
+
+management:
+  health:
+    defaults:
+      enabled: false
+  endpoint:
+    health:
+      show-details: never
+      show-components: never
+      probes:
+        enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+---
+#
+# LOCAL Setting
+###########################################
+server:
+  port: 8097
+  servlet:
+    context-path: /api/bo
+    
+spring:
+  config:
+    activate:
+      on-profile: local, default
+  zipkin:
+    enabled: false
+  datasource:
+    main:
+      #jdbc-url: jdbc:postgresql://thm-dev-product-cluster.cluster-ro-c8ozhq4tkh6g.ap-northeast-2.rds.amazonaws.com:5432/thehandsome?currentSchema=pd_adm
+      jdbc-url: jdbc:log4jdbc:postgresql://localhost:5432/postgres?currentSchema=public
+      #driver-class-name: org.postgresql.Driver
+      driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy    
+      username: enbiz
+      password: ENC(HrUDmfNQe8eFLPyowYesfad3oA9h3Rt5mGX8EkzNJBtVnC/FDw7X/ZQHr4E7xB6f)
+      hikari:
+        maximum-pool-size: 5
+        minimum-idle: 5
+        connection-timeout: 30000
+        validation-timeout: 5000
+        max-lifetime: 1800000
+        idle-timeout: 300000
+    replica:
+      #jdbc-url: jdbc:postgresql://thm-dev-product-cluster.cluster-c8ozhq4tkh6g.ap-northeast-2.rds.amazonaws.com:5432/thehandsome?currentSchema=pd_adm
+      jdbc-url: jdbc:log4jdbc:postgresql://localhost:5432/postgres?currentSchema=public
+      #driver-class-name: org.postgresql.Driver
+      driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy    
+      username: enbiz
+      password: ENC(HrUDmfNQe8eFLPyowYesfad3oA9h3Rt5mGX8EkzNJBtVnC/FDw7X/ZQHr4E7xB6f)
+      hikari:
+        maximum-pool-size: 5
+        minimum-idle: 5
+        connection-timeout: 30000
+        validation-timeout: 5000
+        max-lifetime: 1800000
+        idle-timeout: 300000
+
+jwt:
+  service:      
+    key: ENC(tPTaIXGb/JuKzYzDn0Yba44yrURlH9GsO1vMxPW9mR6kBoNR0CWqTY4vXTuhJkSdEcTn836uapzV0ILlnCV/wQ==)
+#    secret: secret-encryption-needed
+
+jasypt:
+  encryptor:
+    password: local # PROD 환경에서는 환경변수 통해 값을 넣어줄것. 
+
+---
+#
+# DEV Setting
+###########################################
+spring:
+  config:
+    activate:
+      on-profile: dev
