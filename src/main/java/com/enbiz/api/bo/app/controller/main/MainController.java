@@ -30,7 +30,7 @@ public class MainController {
 
 	/**
 	 * 유효한 사용자 인증
-	 * 
+	 *
 	 * @param loginRequest
 	 * @return
 	 * @throws Exception
@@ -42,7 +42,7 @@ public class MainController {
 
 	/**
 	 * 비밀번호 찾기 시 아이디 잠금 해제
-	 * 
+	 *
 	 * @param loginRequest
 	 * @throws Exception
 	 */
@@ -54,7 +54,7 @@ public class MainController {
 
 	/**
 	 * 즐겨찾기 메뉴 조회
-	 * 
+	 *
 	 * @param topMenuRequest
 	 * @throws Exception
 	 */
@@ -67,20 +67,20 @@ public class MainController {
 
 	/**
 	 * 즐겨찾기 메뉴 중복 조회
-	 * 
+	 *
 	 * @param topMenuRequest
 	 * @throws Exception
 	 */
 	@GetMapping("/checkDuplicateUserFavoriteMenu")
 	public Response<Integer> checkDuplicateUserFavoriteMenu(
-			@RequestBody UserFavoriteMenuRequest userFavoriteMenuRequest) throws Exception {
+			UserFavoriteMenuRequest userFavoriteMenuRequest) throws Exception {
 		int result = userFavoriteMenuMgmtService.checkDuplicateUserFavoriteMenu(userFavoriteMenuRequest);
 		return new Response<Integer>().setPayload(result);
 	}
 
 	/**
 	 * 즐겨찾기 메뉴 등록
-	 * 
+	 *
 	 * @param topMenuRequest
 	 * @throws Exception
 	 */

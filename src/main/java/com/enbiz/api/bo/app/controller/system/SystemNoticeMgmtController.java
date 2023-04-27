@@ -31,7 +31,7 @@ public class SystemNoticeMgmtController {
 
 	/**
 	 * 시스템공지수정
-	 * 
+	 *
 	 * @param req
 	 * @param void
 	 * @throws Exception
@@ -53,14 +53,14 @@ public class SystemNoticeMgmtController {
 	}
 
 	@GetMapping("/getSystemNoticeInfo")
-	public Response<SystemNoticeInfoResponse> getSystemNoticeInfo(@RequestBody String bbcNo) throws Exception {
+	public Response<SystemNoticeInfoResponse> getSystemNoticeInfo(String bbcNo) throws Exception {
 		SystemNoticeInfoResponse response = systemNoticeMgmtservice.getSystemNoticeInfo(bbcNo);
 		return new Response<SystemNoticeInfoResponse>().setPayload(response);
 	}
 
 	@GetMapping("/getSystemNoticeList")
 	public Response<RealGridListResponse> getSystemNoticeList(
-			@RequestBody SystemNoticeListRequest systemNoticeListRequest) {
+			SystemNoticeListRequest systemNoticeListRequest) {
 		int totalCount = systemNoticeMgmtservice.getSystemNoticeListCount(systemNoticeListRequest);
 		List<SystemNoticeListResponse> response = systemNoticeMgmtservice.getSystemNoticeList(systemNoticeListRequest);
 		return new Response<RealGridListResponse>().setPayload(new RealGridListResponse(response, totalCount));
@@ -107,19 +107,19 @@ public class SystemNoticeMgmtController {
 //     * @return 대시보드 시스템공지 목록
 //     */
 //    List<DashboardNoticeResponse> getSystemNoticeInfoListByToday(DashboardNoticeRequest dashboardNoticeRequest);
-//    
+//
 //    /**
 //     * 대시보스 시스템공지 상세 조회
 //     * @param dashboardNoticeRequest
 //     * @return 대시보스 시스템공지 상세
 //     */
 //    DashboardNoticeResponse getSystemNoticeInfoListByTodayDetail(DashboardNoticeRequest dashboardNoticeRequest);
-//    
+//
 //    /**
 //     * 시스템공지 첨부파일 목록 조회
 //     * @param bbcNo
 //     * @return 시스템공지 첨부파일
 //     */
 //    List<SystemNoticeAttachFileResponse> getAttachFileList(String bbcNo);
-//    
+//
 }
