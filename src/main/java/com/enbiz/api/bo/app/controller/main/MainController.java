@@ -36,7 +36,7 @@ public class MainController {
 	 * @throws Exception
 	 */
 	@GetMapping("/getTopMenuList")
-	public Response<List<TopMenuResponse>> getTopMenuList(@RequestBody LoginRequest loginRequest) throws Exception {
+	public Response<List<TopMenuResponse>> getTopMenuList(LoginRequest loginRequest) throws Exception {
 		return new Response<List<TopMenuResponse>>().setPayload(mainService.getTopMenuList(loginRequest));
 	}
 
@@ -47,7 +47,7 @@ public class MainController {
 	 * @throws Exception
 	 */
 	@GetMapping("/getLeftMenuList")
-	public Response<List<LeftMenuResponse>> getLeftMenuList(@RequestBody TopMenuRequest topMenuRequest)
+	public Response<List<LeftMenuResponse>> getLeftMenuList(TopMenuRequest topMenuRequest)
 			throws Exception {
 		return new Response<List<LeftMenuResponse>>().setPayload(mainService.getLeftMenuList(topMenuRequest));
 	}
@@ -59,7 +59,7 @@ public class MainController {
 	 * @throws Exception
 	 */
 	@GetMapping("/getFavoriteMenu")
-	public Response<List<LeftMenuResponse>> getFavoriteMenu(@RequestBody TopMenuRequest topMenuRequest)
+	public Response<List<LeftMenuResponse>> getFavoriteMenu(TopMenuRequest topMenuRequest)
 			throws Exception {
 		List<LeftMenuResponse> response = userFavoriteMenuMgmtService.getFavoriteMenu(topMenuRequest);
 		return new Response<List<LeftMenuResponse>>().setPayload(response);

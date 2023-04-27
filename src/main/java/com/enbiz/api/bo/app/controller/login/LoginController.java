@@ -32,7 +32,7 @@ public class LoginController {
 	 * @throws Exception
 	 */
 	@GetMapping("/getUserCertification")
-	public Response<LoginResponse> getUserCertification(@RequestBody LoginRequest loginRequest) throws Exception {
+	public Response<LoginResponse> getUserCertification( LoginRequest loginRequest) throws Exception {
 		return new Response<LoginResponse>().setPayload(loginService.getUserCertification(loginRequest));
 	}
 
@@ -68,7 +68,7 @@ public class LoginController {
 	 * @throws Exception
 	 */
 	@GetMapping("/getStUserBaseExistsLogin")
-	public Response<LoginResponse> getStUserBaseExistsLogin(@RequestBody LoginRequest loginRequest) throws Exception {
+	public Response<LoginResponse> getStUserBaseExistsLogin(LoginRequest loginRequest) throws Exception {
 		return new Response<LoginResponse>().setPayload(loginService.getStUserBaseExistsLogin(loginRequest));
 	}
 
@@ -129,7 +129,7 @@ public class LoginController {
 	}
 
 	@GetMapping("/getLoginUser")
-	public Response<LoginResponse> getLoginUser(@RequestBody LoginRequest loginRequest) throws Exception {
+	public Response<LoginResponse> getLoginUser( LoginRequest loginRequest) throws Exception {
 		return new Response<LoginResponse>().setPayload(loginService.getLoginUser(loginRequest.getLoginId()));
 	}
 

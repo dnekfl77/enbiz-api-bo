@@ -42,7 +42,7 @@ public class CustomerMgmtController {
 	 * @throws Exception
 	 */
 	@GetMapping("/getCustomerListCount")
-	Response<Integer> getCustomerListCount(@RequestBody CustomerSearchRequest customerSearchRequest) throws Exception {
+	Response<Integer> getCustomerListCount( CustomerSearchRequest customerSearchRequest) throws Exception {
 		return new Response<Integer>().setPayload(customerMgmtService.getCustomerListCount(customerSearchRequest));
 	}
 
@@ -54,7 +54,7 @@ public class CustomerMgmtController {
 	 * @throws Exception
 	 */
 	@GetMapping("/getCustomerList")
-	Response<List<CustomerSearchResponse>> getCustomerList(@RequestBody CustomerSearchRequest customerSearchRequest)
+	Response<List<CustomerSearchResponse>> getCustomerList( CustomerSearchRequest customerSearchRequest)
 			throws Exception {
 		return new Response<List<CustomerSearchResponse>>()
 				.setPayload(customerMgmtService.getCustomerList(customerSearchRequest));
@@ -68,7 +68,7 @@ public class CustomerMgmtController {
 	 * @throws Exception
 	 */
 	@GetMapping("/getCustomerDetail")
-	Response<CustomerDetailResponseEx> getCustomerDetail(@RequestBody CustomerDetailRequest customerDetailRequest)
+	Response<CustomerDetailResponseEx> getCustomerDetail( CustomerDetailRequest customerDetailRequest)
 			throws Exception {
 		return new Response<CustomerDetailResponseEx>()
 				.setPayload(customerMgmtService.getCustomerDetail(customerDetailRequest));
@@ -83,7 +83,7 @@ public class CustomerMgmtController {
 	 */
 	@GetMapping("/getCustomerDeliveryInfoByMbrNoList")
 	Response<List<CustomerDeliveryInfoResponse>> getCustomerDeliveryInfoByMbrNoList(
-			@RequestBody CustomerDetailRequest customerDetailRequest) throws Exception {
+			 CustomerDetailRequest customerDetailRequest) throws Exception {
 		return new Response<List<CustomerDeliveryInfoResponse>>()
 				.setPayload(customerMgmtService.getCustomerDeliveryInfoByMbrNoList(customerDetailRequest));
 	}
@@ -97,7 +97,7 @@ public class CustomerMgmtController {
 	 */
 	@GetMapping("/getCustomerTermsAgreeInfoByMbrNoSiteNoList")
 	Response<List<CustomerTermsAgreeInfoResponse>> getCustomerTermsAgreeInfoByMbrNoSiteNoList(
-			@RequestBody CustomerDetailRequest customerDetailRequest) throws Exception {
+			 CustomerDetailRequest customerDetailRequest) throws Exception {
 		return new Response<List<CustomerTermsAgreeInfoResponse>>()
 				.setPayload(customerMgmtService.getCustomerTermsAgreeInfoByMbrNoSiteNoList(customerDetailRequest));
 	}
@@ -110,7 +110,7 @@ public class CustomerMgmtController {
 	 * @throws Exception
 	 */
 	@GetMapping("/getCustomerGradeHistoryByMemberNoCount")
-	Response<Integer> getCustomerGradeHistoryByMemberNoCount(@RequestBody CustomerDetailRequest customerDetailRequest)
+	Response<Integer> getCustomerGradeHistoryByMemberNoCount( CustomerDetailRequest customerDetailRequest)
 			throws Exception {
 		return new Response<Integer>()
 				.setPayload(customerMgmtService.getCustomerGradeHistoryByMemberNoCount(customerDetailRequest));
@@ -125,7 +125,7 @@ public class CustomerMgmtController {
 	 */
 	@GetMapping("/getCustomerGradeHistoryByMemberNoData")
 	Response<List<CustomerGradeHistoryResponse>> getCustomerGradeHistoryByMemberNoData(
-			@RequestBody CustomerDetailRequest customerDetailRequest) throws Exception {
+			 CustomerDetailRequest customerDetailRequest) throws Exception {
 		return new Response<List<CustomerGradeHistoryResponse>>()
 				.setPayload(customerMgmtService.getCustomerGradeHistoryByMemberNoData(customerDetailRequest));
 	}
@@ -139,7 +139,7 @@ public class CustomerMgmtController {
 	 */
 	@GetMapping("/getCustomerRefundAccountInfoByMemberNo")
 	Response<CustomerRefundAccountInfoResponse> getCustomerRefundAccountInfoByMemberNo(
-			@RequestBody CustomerDetailRequest customerDetailRequest) throws Exception {
+			 CustomerDetailRequest customerDetailRequest) throws Exception {
 		return new Response<CustomerRefundAccountInfoResponse>()
 				.setPayload(customerMgmtService.getCustomerRefundAccountInfoByMemberNo(customerDetailRequest));
 	}
@@ -165,7 +165,7 @@ public class CustomerMgmtController {
 	 * @throws exception
 	 */
 	@GetMapping("/getCustomerDeliveryListCount")
-	Response<Integer> getCustomerDeliveryListCount(@RequestBody CustomerDetailRequest customerDetailRequest)
+	Response<Integer> getCustomerDeliveryListCount( CustomerDetailRequest customerDetailRequest)
 			throws Exception {
 		return new Response<Integer>()
 				.setPayload(customerMgmtService.getCustomerDeliveryListCount(customerDetailRequest));
@@ -180,7 +180,7 @@ public class CustomerMgmtController {
 	 */
 	@GetMapping("/getCustomerDeliveryList")
 	Response<List<CustomerDeliveryInfoResponse>> getCustomerDeliveryList(
-			@RequestBody CustomerDetailRequest customerDetailRequest) throws Exception {
+			 CustomerDetailRequest customerDetailRequest) throws Exception {
 		return new Response<List<CustomerDeliveryInfoResponse>>()
 				.setPayload(customerMgmtService.getCustomerDeliveryList(customerDetailRequest));
 	}
@@ -225,7 +225,7 @@ public class CustomerMgmtController {
 	 */
 	@GetMapping("/getCustomerTermsAgreeHistoryByMemberNoSiteNoCount")
 	Response<Integer> getCustomerTermsAgreeHistoryByMemberNoSiteNoCount(
-			@RequestBody CustomerDetailRequest customerDetailRequest) throws Exception {
+			 CustomerDetailRequest customerDetailRequest) throws Exception {
 		return new Response<Integer>().setPayload(
 				customerMgmtService.getCustomerTermsAgreeHistoryByMemberNoSiteNoCount(customerDetailRequest));
 	}
@@ -239,7 +239,7 @@ public class CustomerMgmtController {
 	 */
 	@GetMapping("/getCustomerTermsAgreeHistoryByMemberNoSiteNoData")
 	Response<List<CustomerTermsAgreeHistoryResponse>> getCustomerTermsAgreeHistoryByMemberNoSiteNoData(
-			@RequestBody CustomerDetailRequest customerDetailRequest) throws Exception {
+			 CustomerDetailRequest customerDetailRequest) throws Exception {
 		return new Response<List<CustomerTermsAgreeHistoryResponse>>().setPayload(
 				customerMgmtService.getCustomerTermsAgreeHistoryByMemberNoSiteNoData(customerDetailRequest));
 	}

@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.springframework.context.annotation.Lazy;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,24 +29,24 @@ public class CodeController {
 	private final CodeRepository codeRepository;
 
 	@GetMapping("/getStStdCd")
-	public Response<Map<String, List<StStdCd>>> getStStdCd(@RequestBody String grpCds) throws Exception {
+	public Response<Map<String, List<StStdCd>>> getStStdCd( String grpCds) throws Exception {
 		return new Response<Map<String, List<StStdCd>>>().setPayload(codeService.getStStdCd(grpCds));
 	}
 
 	@GetMapping("/getReverseStStdCd")
-	public Response<Map<String, List<StStdCd>>> getReverseStStdCd(@RequestBody String grpCds) throws Exception {
+	public Response<Map<String, List<StStdCd>>> getReverseStStdCd( String grpCds) throws Exception {
 		return new Response<Map<String, List<StStdCd>>>().setPayload(codeService.getReverseStStdCd(grpCds));
 	}
 
 	@GetMapping("/getForwardCdCdNmFromStStdCdByArrayGrpCd")
-	public Response<Map<String, List<CodeResDto>>> getForwardCdCdNmFromStStdCdByArrayGrpCd(@RequestBody String grpCds)
+	public Response<Map<String, List<CodeResDto>>> getForwardCdCdNmFromStStdCdByArrayGrpCd( String grpCds)
 			throws Exception {
 		return new Response<Map<String, List<CodeResDto>>>()
 				.setPayload(codeService.getForwardCdCdNmFromStStdCdByArrayGrpCd(grpCds));
 	}
 
 	@GetMapping("/getReverseCdCdNmFromStStdCdByArrayGrpCd")
-	public Response<Map<String, List<CodeResDto>>> getReverseCdCdNmFromStStdCdByArrayGrpCd(@RequestBody String grpCds)
+	public Response<Map<String, List<CodeResDto>>> getReverseCdCdNmFromStStdCdByArrayGrpCd( String grpCds)
 			throws Exception {
 		return new Response<Map<String, List<CodeResDto>>>()
 				.setPayload(codeService.getReverseCdCdNmFromStStdCdByArrayGrpCd(grpCds));
@@ -59,20 +60,18 @@ public class CodeController {
 
 	@GetMapping("/getForwardCdCdNmFromStStdCdByGrpCdRef1Val")
 	public Response<Map<String, List<CodeResDto>>> getForwardCdCdNmFromStStdCdByGrpCdRef1Val(
-			@RequestBody CodeReqDto params) throws Exception {
+			 CodeReqDto params) throws Exception {
 		return new Response<Map<String, List<CodeResDto>>>()
 				.setPayload(codeService.getForwardCdCdNmFromStStdCdByGrpCdRef1Val(params));
 	}
 
-	@GetMapping("/getForwardCdCdNmByMixedCode")
-	public Response<Map<String, List<CodeResDto>>> getForwardCdCdNmByMixedCode(@RequestBody List<CodeReqDto> params)
-			throws Exception {
-		return new Response<Map<String, List<CodeResDto>>>()
-				.setPayload(codeService.getForwardCdCdNmByMixedCode(params));
-	}
+	@PostMapping("/getForwardCdCdNmByMixedCode")
+    public Response<Map<String, List<CodeResDto>>> getForwardCdCdNmByMixedCode(@RequestBody List<CodeReqDto> params) throws Exception {
+    	return new Response<Map<String, List<CodeResDto>>>().setPayload(codeService.getForwardCdCdNmByMixedCode(params));
+    }
 
 	@GetMapping("/getButtonByPageRoleList")
-	public Response<String> getButtonByPageRoleList(@RequestBody LoginRequest loginRequest) throws Exception {
+	public Response<String> getButtonByPageRoleList( LoginRequest loginRequest) throws Exception {
 		String buttonRole = codeRepository.getButtonByPageRoleList(loginRequest);
 		return new Response<String>().setPayload(buttonRole);
 	}

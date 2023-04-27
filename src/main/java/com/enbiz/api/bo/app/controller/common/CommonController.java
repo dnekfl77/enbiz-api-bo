@@ -35,7 +35,7 @@ public class CommonController {
 	 * @throws Exception
 	 */
 	@GetMapping("/getAdminGroups")
-	public Response<Integer> getAdminGroups(@RequestBody LoginRequest loginRequest) throws Exception {
+	public Response<Integer> getAdminGroups(LoginRequest loginRequest) throws Exception {
 		return new Response<Integer>().setPayload(adminGroupService.getAdminGroups(loginRequest));
 	}
 
@@ -45,7 +45,7 @@ public class CommonController {
 	 * @throws Exception
 	 */
 	@GetMapping("/getRtTgtSeqByStRtTgtBase")
-	public Response<StRtTgtBase> getRtTgtSeqByStRtTgtBase(@RequestBody StRtTgtBase stRtTgtBase) throws Exception {
+	public Response<StRtTgtBase> getRtTgtSeqByStRtTgtBase(StRtTgtBase stRtTgtBase) throws Exception {
 		StRtTgtBase data = monitoringMgmtService.getRtTgtSeqByStRtTgtBase(stRtTgtBase);
 		Response<StRtTgtBase> response = new Response<StRtTgtBase>().setPayload(data);
 		return response;

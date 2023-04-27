@@ -20,6 +20,10 @@
 			 , SYS_REG_ID
 			 , SYS_MOD_DTM
 			 , SYS_MOD_ID
+			 , SYS_REG_MENU_ID
+			 , SYS_REG_IP_ADDR
+			 , SYS_MOD_MENU_ID
+			 , SYS_MOD_IP_ADDR
 		) VALUES (
 			   #{loginLogSeq}
 			 , #{userId}
@@ -32,6 +36,10 @@
 			 , #{sysRegId}
 			 , NOW()
 			 , #{sysModId}
+			 , #{sysRegMenuId}
+			 , #{sysRegIpAddr}
+			 , #{sysModMenuId}
+			 , #{sysModIpAddr}
 		)
     </insert>
 
