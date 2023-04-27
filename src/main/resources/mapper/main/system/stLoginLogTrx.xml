@@ -6,7 +6,7 @@
 	<!--  로그인 이력 -->
 	<insert id="insertStLoginLog" parameterType="stLoginLog">
 		<selectKey keyProperty="loginLogSeq" resultType="long" order="BEFORE">
-			SELECT NEXTVAL('st_login_log_sq01') AS loginLogSeq
+			SELECT NEXTVAL(st_login_log_sq01) AS loginLogSeq
 		</selectKey>
 		INSERT INTO ST_LOGIN_LOG (	/* StLoginLogTrxMapper.insertStLoginLog */
 			   LOGIN_LOG_SEQ

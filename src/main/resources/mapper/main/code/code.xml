@@ -40,7 +40,7 @@
 
     <select id="getCdCdNmFromStStdCdByArrayGrpCd" parameterType="map" resultType="CodeResDto">
         SELECT /* code.getCdCdNmFromStStdCdByArrayGrpCd */
-               GRP_CD AS KEY
+               GRP_CD AS "key"
              , CD
              , CD_NM
           FROM ST_STD_CD
@@ -54,7 +54,7 @@
 
     <select id="getCdCdNmFromStStdCdByGrpCdRef1Val" parameterType="CodeReqDto" resultType="CodeResDto">
         SELECT /* code.getCdCdNmFromStStdCdByGrpCdRef1Val */
-               GRP_CD AS KEY
+               GRP_CD AS "key"
              , CD
              , CD_NM
           FROM ST_STD_CD
@@ -66,7 +66,7 @@
 
     <select id="getCdCdNmFromCcSiteBaseByEmpty" resultType="CodeResDto">
         SELECT /* code.getCdCdNmFromCcSiteBaseByEmpty */
-               'SITE' AS KEY
+               'SITE' AS "key"
              , SITE_NO AS CD
              , SITE_NM AS CD_NM
           FROM CC_SITE_BASE

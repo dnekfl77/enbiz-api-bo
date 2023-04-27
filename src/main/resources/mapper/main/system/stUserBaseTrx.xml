@@ -31,7 +31,7 @@
 		UPDATE ST_USER_BASE /* stUserBaseTrx.updateIdLockYnCheck */
 		   SET PWD_LOCK_YN  = 'Y'
 		 WHERE USER_ID	 = #{userId}
-		   AND DATE_TRUNC('day', NOW() + INTERVAL '-3 MONTHS') > RCNT_USE_DTM
+		   AND DATE_ADD(NOW(), INTERVAL -3 MONTH) > RCNT_USE_DTM
 	</update>
 
 	<!-- 로그인 성공 -->

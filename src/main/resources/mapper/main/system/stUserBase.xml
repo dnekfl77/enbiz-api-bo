@@ -5,7 +5,8 @@
 <mapper namespace="com.enbiz.api.bo.app.repository.main.system.StUserBaseMapper">
 
 	<sql id="paginatedBase">
-		LIMIT ${rowsPerPage} OFFSET (${pageIdx} - 1) * ${rowsPerPage}
+/*		LIMIT {rowsPerPage} OFFSET ({pageIdx} - 1) * {rowsPerPage} */
+		LIMIT ${rowsPerPage} OFFSET 0
 	</sql>
 
 	<sql id="userBaseList">
@@ -15,15 +16,15 @@
 			, PWD
 			, SDC.DEPT_NM AS DEPT_NM
 			, USER_GB_CD
-			, FN_GET_CODENAME('UR001', USER_GB_CD) AS USER_GB_NM
+			, (SELECT CD_NM FROM ST_STD_CD WHERE GRP_CD = 'UR001' AND CD = USER_GB_CD) AS USER_GB_NM
 			, ENTR_NO
 			, RT_GRP_NO
 			, SUB.JOB_GRP_CD
-			, FN_GET_CODENAME('UR002', SUB.JOB_GRP_CD) AS ORG_TYP_NM
+			, (SELECT CD_NM FROM ST_STD_CD WHERE GRP_CD = 'UR002' AND CD = SUB.JOB_GRP_CD) AS ORG_TYP_NM
 			, OCP_CD
-			, FN_GET_CODENAME('UR003', OCP_CD) AS OCP_NM
+			, (SELECT CD_NM FROM ST_STD_CD WHERE GRP_CD = 'UR003' AND CD = OCP_CD) AS OCP_NM
 			, WORK_STAT_CD
-			, FN_GET_CODENAME('UR004', WORK_STAT_CD) AS WORK_STAT_NM
+			, (SELECT CD_NM FROM ST_STD_CD WHERE GRP_CD = 'UR004' AND CD = WORK_STAT_CD) AS WORK_STAT_NM
 			, TEL_RGN_NO
 			, TEL_TXNO_NO
 			, TEL_END_NO
@@ -47,12 +48,12 @@
 		 FROM ST_USER_BASE SUB
 		 LEFT OUTER JOIN ST_DEPT_CD SDC
 					  ON SUB.DEPT_CD = SDC.DEPT_CD
-		WHERE USER_NM LIKE #{userNm} || '%'
-		  AND USER_ID LIKE #{userId} || '%'
-		  AND USER_GB_CD LIKE #{userGbCd} || '%'
-		  AND SUB.JOB_GRP_CD LIKE #{jobGrpCd} || '%'
-		  AND WORK_STAT_CD LIKE #{workStatCd} || '%'
-		  AND SUB.USE_YN LIKE #{useYn} || '%'
+		WHERE USER_NM LIKE CONCAT(#{userNm}, '%')
+		  AND USER_ID LIKE CONCAT(#{userId}, '%')
+		  AND USER_GB_CD LIKE CONCAT(#{userGbCd}, '%')
+		  AND SUB.JOB_GRP_CD LIKE CONCAT(#{jobGrpCd}, '%')
+		  AND WORK_STAT_CD LIKE CONCAT(#{workStatCd}, '%')
+		  AND SUB.USE_YN LIKE CONCAT(#{useYn}, '%')
 	</sql>
 
 	<select id="getUserList"  parameterType="StUserBaseRequest" resultType="StUserBaseResponse">
@@ -67,15 +68,15 @@
 			 , PWD
 			 , SDC.DEPT_NM AS DEPT_NM
 			 , USER_GB_CD
-			 , FN_GET_CODENAME('UR001', USER_GB_CD) AS USER_GB_NM
+			 , (SELECT CD_NM FROM ST_STD_CD WHERE GRP_CD = 'UR001' AND CD = USER_GB_CD) AS USER_GB_NM
 			 , ENTR_NO
 			 , RT_GRP_NO
 			 , SUB.JOB_GRP_CD
-			 , FN_GET_CODENAME('UR002', SUB.JOB_GRP_CD) AS ORG_TYP_NM
+			 , (SELECT CD_NM FROM ST_STD_CD WHERE GRP_CD = 'UR002' AND CD = SUB.JOB_GRP_CD) AS ORG_TYP_NM
 			 , OCP_CD
-			 , FN_GET_CODENAME('UR003', OCP_CD) AS OCP_NM
+			 , (SELECT CD_NM FROM ST_STD_CD WHERE GRP_CD = 'UR003' AND CD = OCP_CD) AS OCP_NM
 			 , WORK_STAT_CD
-			 , FN_GET_CODENAME('UR004', WORK_STAT_CD) AS WORK_STAT_NM
+			 , (SELECT CD_NM FROM ST_STD_CD WHERE GRP_CD = 'UR004' AND CD = WORK_STAT_CD) AS WORK_STAT_NM
 			 , TEL_RGN_NO
 			 , TEL_TXNO_NO
 			 , TEL_END_NO
@@ -99,24 +100,24 @@
 		  FROM ST_USER_BASE SUB
 		  LEFT OUTER JOIN ST_DEPT_CD SDC
 					   ON SUB.DEPT_CD = SDC.DEPT_CD
-		 WHERE USER_NM LIKE #{userNm} || '%'
-		   AND USER_ID LIKE #{userId} || '%'
-		   AND USER_GB_CD LIKE #{userGbCd} || '%'
-		   AND SUB.JOB_GRP_CD LIKE #{jobGrpCd} || '%'
-		   AND WORK_STAT_CD LIKE #{workStatCd} || '%'
-		   AND SUB.USE_YN LIKE #{useYn} || '%'
+		 WHERE USER_NM LIKE CONCAT(#{userNm}, '%')
+		   AND USER_ID LIKE CONCAT(#{userId}, '%')
+		   AND USER_GB_CD LIKE CONCAT(#{userGbCd}, '%')
+		   AND SUB.JOB_GRP_CD LIKE CONCAT(#{jobGrpCd}, '%')
+		   AND WORK_STAT_CD LIKE CONCAT(#{workStatCd}, '%')
+		   AND SUB.USE_YN LIKE CONCAT(#{useYn}, '%')
 	</select>
 
 	<select id="getUserListCount" parameterType="StUserBaseRequest" resultType="java.lang.Integer">
 	   SELECT /* stUserBase.getUserListCount */
 			  COUNT(*)
 		 FROM ST_USER_BASE
-		WHERE USER_NM LIKE #{userNm} || '%'
-		  AND USER_ID LIKE #{userId} || '%'
-		  AND USER_GB_CD LIKE #{userGbCd} || '%'
-		  AND JOB_GRP_CD LIKE #{jobGrpCd} || '%'
-		  AND WORK_STAT_CD LIKE #{workStatCd} || '%'
-		  AND USE_YN LIKE #{useYn} || '%'
+		WHERE USER_NM LIKE CONCAT(#{userNm}, '%')
+		  AND USER_ID LIKE CONCAT(#{userId}, '%')
+		  AND USER_GB_CD LIKE CONCAT(#{userGbCd}, '%')
+		  AND JOB_GRP_CD LIKE CONCAT(#{jobGrpCd}, '%')
+		  AND WORK_STAT_CD LIKE CONCAT(#{workStatCd}, '%')
+		  AND USE_YN LIKE CONCAT(#{useYn}, '%')
 	</select>
 
 	<select id="getUserCertification" resultType="com.enbiz.api.bo.app.dto.response.login.LoginResponse" parameterType="com.enbiz.api.bo.app.dto.request.login.LoginRequest">
@@ -158,14 +159,14 @@
 			 , USER_NM
 			 , PWD
 			 , USER_GB_CD
-			 , FN_GET_CODENAME('UR001', USER_GB_CD) AS USER_GB_NM
+			 , (SELECT CD_NM FROM ST_STD_CD WHERE GRP_CD = 'UR001' AND CD = USER_GB_CD) AS USER_GB_NM
 			 , RT_GRP_NO
 			 , JOB_GRP_CD
-			 , FN_GET_CODENAME('UR002', JOB_GRP_CD) AS ORG_TYP_NM
+			 , (SELECT CD_NM FROM ST_STD_CD WHERE GRP_CD = 'UR002' AND CD = JOB_GRP_CD) AS ORG_TYP_NM
 			 , OCP_CD
-			 , FN_GET_CODENAME('UR003', OCP_CD) AS OCP_NM
+			 , (SELECT CD_NM FROM ST_STD_CD WHERE GRP_CD = 'UR003' AND CD = OCP_CD) AS OCP_NM
 			 , WORK_STAT_CD
-			 , FN_GET_CODENAME('UR004', WORK_STAT_CD) AS WORK_STAT_NM
+			 , (SELECT CD_NM FROM ST_STD_CD WHERE GRP_CD = 'UR004' AND CD = WORK_STAT_CD) AS WORK_STAT_NM
 			 , CELL_SCT_NO
 			 , CELL_TXNO_NO
 			 , CELL_END_NO
@@ -180,7 +181,7 @@
 			 , PWD_INI_YN
 			 , USE_YN
 			 , ENTR_NO
-			 , CASE WHEN DATE_TRUNC('day', NOW() + INTERVAL '-6 MONTHS') > LST_PWD_CHG_DTM THEN 'Y'
+			 , CASE WHEN DATE_ADD(NOW(), INTERVAL -6 MONTH) > LST_PWD_CHG_DTM THEN 'Y'
 					ELSE 'N'
 			   END PASSWORD_CHANGE_YN
 			 , ( SELECT LOGIN_IP_ADDR
@@ -198,7 +199,7 @@
 		 WHERE USER_ID = #{loginId}
 		 <if test="pwd != null and pwd != ''">
 		   AND PWD = #{pwd}
-		 </if>  
+		 </if>
 		   AND USE_YN = 'Y'
 	</select>
 
@@ -213,20 +214,20 @@
 			AND JOB_GRP_CD = #{jobGrpCd}
 		</if>
 		<if test="userId != null and userId != ''">
-			AND USER_ID LIKE '%' || #{userId} || '%'
+			AND USER_ID LIKE CONCAT('%', #{userId}, '%')
 		</if>
 		<if test="userNm != null and userNm != ''">
-			AND USER_Nm LIKE '%' || #{userNm} || '%'
+			AND USER_Nm LIKE CONCAT('%', #{userNm}, '%')
 		</if>
 	</select>
 	<select id="getUserListInUserMenu" parameterType="UserListRequest" resultType="UserListResponse">
 		SELECT /* stUserBase.getUserListInUserMenu */
 			  SUB.USER_ID														-- 사용자아이디 varchar(30) NOT NULL
 			, SUB.USER_NM													-- 사용자명 varchar(100) NOT NULL
-			, FN_GET_CODENAME('UR002', SUB.JOB_GRP_CD) AS ORG_TYP_NM		-- 업무그룹코드(UR002) varchar(10) NOT NULL
+			, (SELECT CD_NM FROM ST_STD_CD WHERE GRP_CD = 'UR002' AND CD = SUB.JOB_GRP_CD) AS ORG_TYP_NM		-- 업무그룹코드(UR002) varchar(10) NOT NULL
 			, SDC.DEPT_NM AS DEPT_NM										-- 부서명 varchar(300) NOT NULL
-			, FN_GET_CODENAME('UR003', SUB.OCP_CD) AS OCP_NM				-- 직책코드(UR003)varchar(10) NOT NULL
-			, FN_GET_CODENAME('UR004', SUB.WORK_STAT_CD) AS WORK_STAT_NM	-- 근무상태코드(UR004) varchar(10) NOT NULL
+			, (SELECT CD_NM FROM ST_STD_CD WHERE GRP_CD = 'UR003' AND CD = SUB.OCP_CD) AS OCP_NM				-- 직책코드(UR003)varchar(10) NOT NULL
+			, (SELECT CD_NM FROM ST_STD_CD WHERE GRP_CD = 'UR004' AND CD = SUB.WORK_STAT_CD) AS WORK_STAT_NM	-- 근무상태코드(UR004) varchar(10) NOT NULL
 			, SUB.PWD_LOCK_YN												-- 비밀번호잠김여부 varchar(1) NOT NULL
 			, SUB.IND_INFO_DEAL_YN											-- 개인정보취급여부 varchar(1) NOT NULL
 			, SUB.SYS_MOD_ID												-- 시스템수정자ID varchar(30) NOT NULL
@@ -240,10 +241,10 @@
 			AND JOB_GRP_CD = #{jobGrpCd}
 		</if>
 		<if test="userId != null and userId != ''">
-			AND USER_ID LIKE '%' || #{userId} || '%'
+			AND USER_ID LIKE CONCAT('%', #{userId}, '%')
 		</if>
 		<if test="userNm != null and userNm != ''">
-			AND USER_NM LIKE '%' || #{userNm} || '%'
+			AND USER_NM LIKE CONCAT('%', #{userNm}, '%')
 		</if>
 		ORDER BY SYS_REG_DTM DESC
 		<include refid="paginatedBase" />
@@ -255,16 +256,16 @@
 			, USER_NM
 			, PWD
 			, USER_GB_CD
-			, FN_GET_CODENAME('UR001', USER_GB_CD) AS USER_GB_NM
+			, (SELECT CD_NM FROM ST_STD_CD WHERE GRP_CD = 'UR001' AND CD = USER_GB_CD) AS USER_GB_NM
 			, ENTR_NO
 			, RT_GRP_NO
 			, JOB_GRP_CD
 			, DEPT_CD
-			, FN_GET_CODENAME('UR002', JOB_GRP_CD) AS ORG_TYP_NM
+			, (SELECT CD_NM FROM ST_STD_CD WHERE GRP_CD = 'UR002' AND CD = JOB_GRP_CD) AS ORG_TYP_NM
 			, OCP_CD
-			, FN_GET_CODENAME('UR003', OCP_CD) AS OCP_NM
+			, (SELECT CD_NM FROM ST_STD_CD WHERE GRP_CD = 'UR003' AND CD = OCP_CD) AS OCP_NM
 			, WORK_STAT_CD
-			, FN_GET_CODENAME('UR004', WORK_STAT_CD) AS WORK_STAT_NM
+			, (SELECT CD_NM FROM ST_STD_CD WHERE GRP_CD = 'UR004' AND CD = WORK_STAT_CD) AS WORK_STAT_NM
 			, TEL_RGN_NO
 			, TEL_TXNO_NO
 			, TEL_END_NO
