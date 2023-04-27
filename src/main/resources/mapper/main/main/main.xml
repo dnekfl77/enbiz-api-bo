@@ -57,7 +57,7 @@
                  , 1 AS LEVEL
                  , LEAF_MENU_YN
                  , CALL_URL
-                 , CONCAT('\',TRIM(TO_CHAR(SORT_SEQ,'000'))||RT_TGT_SEQ) AS HIERARCHY
+                 , CONCAT('\\',TRIM(LPAD(SORT_SEQ, 3, '0')),RT_TGT_SEQ) AS HIERARCHY
               FROM ST_RT_TGT_BASE A
              WHERE USE_YN = 'Y'
                AND UPR_RT_TGT_SEQ = #{rtTgtSeq} /* ARGUMENT (1 DEPTH 권한대상순번)*/
@@ -73,7 +73,7 @@
                  , LEVEL + 1
                  , SMB.LEAF_MENU_YN
                  , SMB.CALL_URL
-                 , CONCAT_WS('\', TMP1.HIERARCHY, TRIM(TO_CHAR(SMB.SORT_SEQ,'000'))||SMB.RT_TGT_SEQ) AS HIERARCHY
+                 , CONCAT_WS('\\', TMP1.HIERARCHY, TRIM(LPAD(SMB.SORT_SEQ, 3, '0')), SMB.RT_TGT_SEQ) AS HIERARCHY
               FROM ST_RT_TGT_BASE SMB
                  , CTE AS TMP1
              WHERE TMP1.RT_TGT_SEQ = SMB.UPR_RT_TGT_SEQ

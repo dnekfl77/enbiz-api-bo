@@ -5,7 +5,8 @@
 <mapper namespace="com.enbiz.api.bo.app.repository.main.system.StStdCdMapper">
 
 	<sql id="paginatedBase">
-		LIMIT ${rowsPerPage} OFFSET (${pageIdx} - 1) * ${rowsPerPage}
+/*		LIMIT {rowsPerPage} OFFSET ({pageIdx} - 1) * {rowsPerPage} */
+		LIMIT #{rowsPerPage} OFFSET 0
 	</sql>
 
 	<sql id="getStStdCdListBase">

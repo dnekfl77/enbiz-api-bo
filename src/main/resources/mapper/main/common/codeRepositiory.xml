@@ -36,7 +36,7 @@
                SELECT RT_TGT_SEQ
                  FROM ST_RT_TGT_BASE
                 WHERE USE_YN='Y'
-                  AND LTRIM(CALL_URL,'/') = LTRIM(#{caloUrl},'/')
+                  AND TRIM(LEADING '/' FROM CALL_URL) = TRIM(LEADING '/' FROM #{caloUrl})
                )
            AND COALESCE(A.USE_YN,'N') = 'N'
     </select>

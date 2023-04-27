@@ -4,7 +4,8 @@
 <mapper namespace="com.enbiz.api.bo.app.repository.main.system.StGrpCdMapper">
 	<!--"com.x2commerce.backoffice.app.v1.system.dto.request.GroupCodeRequest"  -->
 	<sql id="paginatedBase">
-		LIMIT ${rowsPerPage} OFFSET (${pageIdx} - 1) * ${rowsPerPage}
+/*		LIMIT {rowsPerPage} OFFSET ({pageIdx} - 1) * {rowsPerPage} */
+        LIMIT #{rowsPerPage} OFFSET 0
 	</sql>
 	<!-- 공통코드 목록 조회 -->
 	<sql id="getStGrpCdListBase">
@@ -24,8 +25,8 @@
 		     , TO_CHAR(SYS_MOD_DTM, 'YYYY-MM-DD HH24:MI:SS') SYS_MOD_DTM
 		  FROM ST_GRP_CD
 		 WHERE 1 = 1
-		   AND GRP_CD LIKE #{grpCd} || '%'
-		   AND GRP_CD_NM LIKE #{grpCdNm} || '%'
+		   AND GRP_CD LIKE CONCAT(#{grpCd}, '%')
+		   AND GRP_CD_NM LIKE CONCAT(#{grpCdNm}, '%')
 			<if test="useYn != null and useYn!= ''">
 				AND USE_YN = #{useYn}
 			</if>
