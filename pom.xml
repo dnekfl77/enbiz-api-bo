@@ -111,7 +111,7 @@
 			<optional>true</optional>
 		</dependency>
 
-		<dependency>
+<!-- 		<dependency>
 			<groupId>NiceID</groupId>
 			<artifactId>NiceID</artifactId>
 			<version>1.0</version>
@@ -121,7 +121,7 @@
 			<groupId>INIpay</groupId>
 			<artifactId>INIpay</artifactId>
 			<version>1.0</version>
-		</dependency>
+		</dependency> -->
 	</dependencies>
 
 	<build>
