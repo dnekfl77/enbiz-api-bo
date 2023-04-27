@@ -14,8 +14,6 @@
 			 , IP_ADDR
 			 , SYS_REG_ID
 			 , SYS_REG_DTM
-			 , SYS_REG_MENU_ID
-			 , SYS_REG_IP_ADDR
 		) VALUES (
 			   #{userId}
 			 , COALESCE(#{rtTgtSeq},'0', #{rtTgtSeq})
@@ -26,8 +24,6 @@
 			 , #{ipAddr}
 			 , #{sysRegId}
 			 , now()
-			 , #{sysRegMenuId}
-			 , #{sysRegIpAddr}
 		)
 	</insert>
 </mapper>

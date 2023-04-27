@@ -12,11 +12,7 @@
             SYS_REG_ID,
             SYS_REG_DTM,
             SYS_MOD_ID,
-            SYS_MOD_DTM,
-            SYS_REG_MENU_ID,
-            SYS_REG_IP_ADDR,
-            SYS_MOD_MENU_ID,
-            SYS_MOD_IP_ADDR
+            SYS_MOD_DTM
         ) VALUES (
              #{userId},
              #{indInfoGbCd},
@@ -24,11 +20,7 @@
              #{sysRegId},
              NOW(),
              #{sysModId},
-             NOW(),
-             #{sysRegMenuId},
-			 #{sysRegIpAddr},
-			 #{sysModMenuId},
-			 #{sysModIpAddr}
+             NOW()
         )
 		ON CONFLICT (USER_ID,IND_INFO_GB_CD)
 		DO UPDATE
