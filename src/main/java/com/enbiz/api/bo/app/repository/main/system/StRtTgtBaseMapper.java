@@ -7,10 +7,11 @@ import org.springframework.stereotype.Repository;
 
 import com.enbiz.api.bo.app.dto.request.login.LoginRequest;
 import com.enbiz.api.bo.app.dto.request.popup.StRtTgtMenuRequest;
-import com.enbiz.api.bo.app.dto.request.system.RtTargetBaseMenuRequest;
+import com.enbiz.api.bo.app.dto.request.system.RightTargetBaseMenuRequest;
+import com.enbiz.api.bo.app.dto.request.system.RightTargetBaseMenuRequest;
 import com.enbiz.api.bo.app.dto.request.system.RtTargetBaseRequest;
 import com.enbiz.api.bo.app.dto.response.popup.StRtTgtMenuResponse;
-import com.enbiz.api.bo.app.dto.response.system.RtTargetBaseMenuResponse;
+import com.enbiz.api.bo.app.dto.response.system.RightTargetBaseMenuResponse;
 import com.enbiz.api.bo.app.dto.response.system.RtTargetBaseResponse;
 import com.enbiz.api.bo.app.entity.StRtTgtBase;
 
@@ -21,69 +22,91 @@ import com.enbiz.api.bo.app.entity.StRtTgtBase;
 @Lazy
 public interface StRtTgtBaseMapper {
 
-	/**
-	 * 페이지 권한 체크
-	 */
-	int getAdminGroupList(LoginRequest loginRequest) throws Exception;
+	   /**
+     * 페이지 권한 체크
+     */
+    int getAdminGroupList(LoginRequest loginRequest) throws Exception;
+
+    /**
+     * 접속한  Url의 RtTgtSeq조회 및 개인정보 유무 조회
+     */
+    StRtTgtBase getRtTgtSeqByStRtTgtBase(StRtTgtBase stRtTgtBase) throws Exception;
+
+    /**
+     * 메뉴 조회 팝업 Mappper
+     */
+    List<StRtTgtMenuResponse> getMenuList(StRtTgtMenuRequest stRtTgtMenuRequest);
+
+    /**
+     * 권한 관리 메뉴 조회 
+     */
+	List<RightTargetBaseMenuResponse> getStRtGrpMenuBaseList(RightTargetBaseMenuRequest stRtTgtMenuRequest);
 
 	/**
-	 * 접속한 Url의 RtTgtSeq조회 및 개인정보 유무 조회
-	 */
-	StRtTgtBase getRtTgtSeqByStRtTgtBase(StRtTgtBase stRtTgtBase) throws Exception;
+     * 권한 관리 메뉴 count 조회 
+     */
+	int getStRtGrpMenuBaseListCount(RightTargetBaseMenuRequest stRtTgtMenuRequest);
 
 	/**
-	 * 메뉴 조회 팝업 Mappper
-	 */
-	List<StRtTgtMenuResponse> getMenuList(StRtTgtMenuRequest stRtTgtMenuRequest);
+     * 권한 관리 버튼 조회 
+     */
+	List<RightTargetBaseMenuResponse> getStRtGrpBtnBaseList(RightTargetBaseMenuRequest stRtTgtMenuRequest);
 
 	/**
-	 * 권한 관리 메뉴 조회
-	 */
-	List<RtTargetBaseMenuResponse> getStRtGrpMenuBaseList(RtTargetBaseMenuRequest stRtTgtMenuRequest);
+     * 권한 관리 버튼 count 조회 
+     */
+	int getStRtGrpBtnBaseListCount(RightTargetBaseMenuRequest stRtTgtMenuRequest);
 
-	/**
-	 * 권한 관리 메뉴 count 조회
-	 */
-	int getStRtGrpMenuBaseListCount(RtTargetBaseMenuRequest stRtTgtMenuRequest);
+    /**
+     * 메뉴 트리 리스트 조회
+     */
+    List<RtTargetBaseResponse> getMenuMgmtTreeList(RtTargetBaseRequest RtTargetBaseRequest) throws Exception;
 
-	/**
-	 * 권한 관리 버튼 조회
-	 */
-	List<RtTargetBaseMenuResponse> getStRtGrpBtnBaseList(RtTargetBaseMenuRequest stRtTgtMenuRequest);
+    List<RtTargetBaseResponse> getMenuMgmtTreeListForGroup(RtTargetBaseRequest RtTargetBaseRequest) throws Exception;
+    
+    /**
+     * 메뉴 트리 클릭시 메뉴 조회
+     */
+    RtTargetBaseResponse getMenuInfo(RtTargetBaseRequest RtTargetBaseRequest) throws Exception;
 
-	/**
-	 * 권한 관리 버튼 count 조회
-	 */
-	int getStRtGrpBtnBaseListCount(RtTargetBaseMenuRequest stRtTgtMenuRequest);
+    /**
+     * 메뉴 트리 클릭시 하위메뉴리스트 count 조회
+     */
+    int getSubMenuListCount(RtTargetBaseRequest RtTargetBaseRequest) throws Exception;
 
-	/**
-	 * 메뉴 트리 리스트 조회
-	 */
-	List<RtTargetBaseResponse> getMenuMgmtTreeList(RtTargetBaseRequest RtTargetBaseRequest) throws Exception;
+    /**
+     * 메뉴 트리 클릭시 하위메뉴리스트 조회
+     */
+    List<RtTargetBaseResponse> getSubMenuList(RtTargetBaseRequest RtTargetBaseRequest) throws Exception;
 
-	/**
-	 * 메뉴 트리 클릭시 메뉴 조회
-	 */
-	RtTargetBaseResponse getMenuInfo(RtTargetBaseRequest RtTargetBaseRequest) throws Exception;
+    /**
+     * 메뉴 트리 클릭시 하위메뉴리스트 count 조회
+     */
+    int getSubMenuCheck(RtTargetBaseRequest RtTargetBaseRequest) throws Exception;
 
-	/**
-	 * 메뉴 트리 클릭시 하위메뉴리스트 count 조회
-	 */
-	int getSubMenuListCount(RtTargetBaseRequest RtTargetBaseRequest) throws Exception;
+    /**
+     * 메뉴 트리 클릭시 하위메뉴리스트 count 조회
+     */
+    int getStRtInfoCheck(RtTargetBaseRequest RtTargetBaseRequest) throws Exception;
+    
+    /**
+     * 개별권한관리 - 모든 메뉴 조회
+     */
+    List<RtTargetBaseResponse> getIndividualMenuTreeList(RtTargetBaseRequest rtTargetBaseRequest) throws Exception;
 
-	/**
-	 * 메뉴 트리 클릭시 하위메뉴리스트 조회
-	 */
-	List<RtTargetBaseResponse> getSubMenuList(RtTargetBaseRequest RtTargetBaseRequest) throws Exception;
-
-	/**
-	 * 메뉴 트리 클릭시 하위메뉴리스트 count 조회
-	 */
-	int getSubMenuCheck(RtTargetBaseRequest RtTargetBaseRequest) throws Exception;
-
-	/**
-	 * 메뉴 트리 클릭시 하위메뉴리스트 count 조회
-	 */
-	int getStRtInfoCheck(RtTargetBaseRequest RtTargetBaseRequest) throws Exception;
+    /**
+     * 개별권한관리 - 추가된 개별권한 메뉴 조회
+     */
+    List<RtTargetBaseResponse> getIndividualMenuTreeListForUser(RtTargetBaseRequest rtTargetBaseRequest) throws Exception;
+    
+    int getIndivMenuCheck(RtTargetBaseRequest rtTargetBaseRequest) throws Exception;
+    
+    int getRightGroupMenuCheck(RtTargetBaseRequest rtTargetBaseRequest) throws Exception;
+    /**
+     * 버튼의 소속 화면 조회
+     * @param rtTgtSeq
+     * @return
+     */
+    String selectScrRtTgtSeqByRtTgtSeq(String rtTgtSeq);
 
 }

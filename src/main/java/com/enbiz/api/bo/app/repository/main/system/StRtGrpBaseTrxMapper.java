@@ -17,4 +17,9 @@ public interface StRtGrpBaseTrxMapper {
 	 * 권한 그룹 수정
 	 */
 	void updateStRtGrpBase(StRtGrpBase stRtGrpBase);
+	
+	/**
+	 * 권한 그룹 시퀀스 조회
+	 */
+	String getRtGrpNo();	
 }

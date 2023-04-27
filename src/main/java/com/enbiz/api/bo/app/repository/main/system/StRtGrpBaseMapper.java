@@ -5,8 +5,8 @@ import java.util.List;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Repository;
 
-import com.enbiz.api.bo.app.dto.request.system.RtGroupBaseRequest;
-import com.enbiz.api.bo.app.dto.response.system.RtGroupBaseResponse;
+import com.enbiz.api.bo.app.dto.request.system.RightGroupBaseRequest;
+import com.enbiz.api.bo.app.dto.response.system.RightGroupBaseResponse;
 
 @Repository
 @Lazy
@@ -14,10 +14,9 @@ public interface StRtGrpBaseMapper {
 	/**
 	 * 권한 그룹 리스트 조회
 	 */
-	List<RtGroupBaseResponse> getStRtGrpBaseList(RtGroupBaseRequest RtGroupBaseRequest);
-
+	List<RightGroupBaseResponse> getStRtGrpBaseList(RightGroupBaseRequest RightGroupBaseRequest);
 	/**
 	 * 권한 그룹 리스트 전체수 조회
 	 */
-	int getStRtGrpBaseListCount(RtGroupBaseRequest RtGroupBaseRequest);
+	int getStRtGrpBaseListCount(RightGroupBaseRequest RightGroupBaseRequest);
 }

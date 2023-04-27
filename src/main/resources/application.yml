@@ -83,7 +83,8 @@ spring:
       message.system.menuUsageStatusInquiry,
       message.system.userAccessHistoryInquiry,
       message.system.userFavoriteMenuMgmt,
-      message.system.passwordChange
+      message.system.passwordChange,
+      message.system.rightGroupMgmt
   cache:
     jcache:
       config: classpath:ehcache.xml
@@ -133,6 +134,7 @@ spring:
       driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy    
       username: enbiz
       password: ENC(HrUDmfNQe8eFLPyowYesfad3oA9h3Rt5mGX8EkzNJBtVnC/FDw7X/ZQHr4E7xB6f)
+
       hikari:
         maximum-pool-size: 5
         minimum-idle: 5

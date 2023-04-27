@@ -42,4 +42,7 @@
 		WHERE RT_GRP_NO = #{rtGrpNo}
 	</update>
 
+	<select id="getRtGrpNo" resultType="String">
+		SELECT NEXTVAL('ST_RT_GRP_BASE_SQ01') AS rtGrpNo
+	</select>
 </mapper>
