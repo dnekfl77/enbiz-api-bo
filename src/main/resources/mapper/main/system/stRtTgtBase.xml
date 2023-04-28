@@ -59,7 +59,7 @@
 
 	<select id="getStRtGrpMenuBaseListCount" parameterType="RtTargetBaseMenuRequest" resultType="java.lang.Integer">
 		SELECT              /* stRtTgtBase.getStRtGrpMenuBaseListCount */
-		       COUNT(*)
+		       COUNT(T1.RT_TGT_SEQ)
 		FROM (
 		  	   <include refid="getStRtGrpMenuBaseListBase" />
 		) T1
@@ -80,13 +80,13 @@
         ORDER BY  A.SORT_SEQ
 	</sql>
 
-	<select id="getStRtGrpBtnBaseList" parameterType="RtTargetBaseMenuRequest" resultType="RtTargetBaseMenuResponse">
+	<select id="getStRtGrpBtnBaseList" parameterType="RtTargetBaseMenuRequest" resultType="RightTargetBaseMenuResponse">
 		<include refid="getStRtGrpBtnBaseListBase" />
 	</select>
 
 	<select id="getStRtGrpBtnBaseListCount" parameterType="RtTargetBaseMenuRequest" resultType="java.lang.Integer">
 		SELECT /* stRtTgtBase.getStRtGrpBtnBaseListCount */
-		       COUNT(*)
+		       COUNT(T1.RT_GRP_NO)
 		FROM (
 		  	   <include refid="getStRtGrpBtnBaseListBase" />
         ) T1
@@ -136,20 +136,21 @@
              , LEAF_MENU_YN
              , CALL_URL
              , RT_TGT_TYP_CD
-             , FN_GET_CODENAME('UR010',RT_TGT_TYP_CD) AS RT_TGT_TYP_NM
+             , (SELECT CD_NM FROM ST_STD_CD WHERE GRP_CD = 'UR010' AND CD = RT_TGT_TYP_CD) AS RT_TGT_TYP_NM
              , USE_YN
              , CUST_INFO_INCL_YN
              , SYS_GB_CD
-             , FN_GET_CODENAME('UR005',SYS_GB_CD) AS SYS_GB_NM
+             , (SELECT CD_NM FROM ST_STD_CD WHERE GRP_CD = 'UR005' AND CD = SYS_GB_CD) AS SYS_GB_NM
              , HIERARCHY
           FROM MENU
          WHERE LEAF_MENU_YN = 'Y'
          ORDER BY HIERARCHY
     </select>
 
-    <select id="getMenuMgmtTreeList" parameterType="RtTargetBaseRequest" resultType="RtTargetBaseResponse">
+	<select id="getMenuMgmtTreeList" parameterType="RtTargetBaseRequest" resultType="RtTargetBaseResponse">
         WITH RECURSIVE CTE AS (       /* stRtTgtBase.getMenuMgmtTreeList */
-                SELECT  RT_TGT_SEQ
+                SELECT  USE_YN
+                	 ,	RT_TGT_SEQ
                      ,  RT_TGT_NM
                      ,  UPR_RT_TGT_SEQ
                      ,  POPUP_YN
@@ -157,11 +158,20 @@
                      ,  ' ' AS BLANK
                      ,  CONCAT('\',SORT_SEQ||RT_TGT_SEQ)  AS HIERARCHY
                      , '0' AS NEW_SORT_SEQ
+                     ,	SYS_GB_CD
+                     ,	RT_TGT_TYP_CD
+                     ,	SORT_SEQ
+                     ,	CALL_URL
+                     ,	CUST_INFO_INCL_YN
+                     ,	RMK_CONT
+                     ,	BTN_ID
+                     ,	LEAF_MENU_YN
+                     ,	USER_HELP_CONT
                 FROM   ST_RT_TGT_BASE A
-                WHERE  USE_YN = 'Y'
-                AND    UPR_RT_TGT_SEQ = #{sysGbCd}
+                WHERE	UPR_RT_TGT_SEQ = #{sysGbCd}
              UNION ALL
-                SELECT  SMB.RT_TGT_SEQ
+                SELECT  SMB.USE_YN
+                	 ,	SMB.RT_TGT_SEQ
                      ,  SMB.RT_TGT_NM
                      ,  SMB.UPR_RT_TGT_SEQ
                      ,  SMB.POPUP_YN
@@ -173,13 +183,105 @@
                             WHEN LEVEL + 1 BETWEEN 2 AND 9 THEN rpad(CAST(SMB.SORT_SEQ AS TEXT), (10-LEVEL + 1) * 3 + CHAR_LENGTH(CAST(SMB.SORT_SEQ AS TEXT)), '0')
                             ELSE '0'
                             END AS NUMERIC) + CAST(TMP1.NEW_SORT_SEQ AS NUMERIC) AS text)
+                     ,	SMB.SYS_GB_CD
+                     ,	SMB.RT_TGT_TYP_CD
+                     ,	SMB.SORT_SEQ
+                     ,	SMB.CALL_URL
+                     ,	SMB.CUST_INFO_INCL_YN
+                     ,	SMB.RMK_CONT
+                     ,	SMB.BTN_ID
+                     ,	SMB.LEAF_MENU_YN
+                     ,	SMB.USER_HELP_CONT
                 FROM    ST_RT_TGT_BASE SMB, CTE AS TMP1
                 WHERE   TMP1.RT_TGT_SEQ = SMB.UPR_RT_TGT_SEQ
                 AND     SMB.RT_TGT_TYP_CD IN ('10','20')
             )
             SELECT    CTE.*
             FROM      CTE
-            ORDER BY  NEW_SORT_SEQ :: NUMERIC
+            ORDER BY  NEW_SORT_SEQ :: NUMERIC, RT_TGT_SEQ
+    </select>
+
+    <select id="getMenuMgmtTreeListForGroup" parameterType="RtTargetBaseRequest" resultType="RtTargetBaseResponse">
+        WITH RECURSIVE CTE AS (       /* stRtTgtBase.getMenuMgmtTreeListForGroup */
+                SELECT  USE_YN
+                	 ,	RT_TGT_SEQ
+                     ,  RT_TGT_NM
+                     ,  UPR_RT_TGT_SEQ
+                     ,  POPUP_YN
+                     ,  1 AS LEVEL
+                     ,  ' ' AS BLANK
+                     ,  CONCAT('\',SORT_SEQ||RT_TGT_SEQ)  AS HIERARCHY
+                     , '0' AS NEW_SORT_SEQ
+                     ,	SYS_GB_CD
+                     ,	RT_TGT_TYP_CD
+                     ,	SORT_SEQ
+                     ,	CALL_URL
+                     ,	CUST_INFO_INCL_YN
+                     ,	RMK_CONT
+                     ,	BTN_ID
+                     ,	LEAF_MENU_YN
+                     ,	USER_HELP_CONT
+                FROM   ST_RT_TGT_BASE A
+                WHERE	UPR_RT_TGT_SEQ = #{sysGbCd}
+             UNION ALL
+                SELECT  SMB.USE_YN
+                	 ,	SMB.RT_TGT_SEQ
+                     ,  SMB.RT_TGT_NM
+                     ,  SMB.UPR_RT_TGT_SEQ
+                     ,  SMB.POPUP_YN
+                     ,  LEVEL + 1
+                     ,  CONCAT(TMP1.BLANK, '  ' ) AS BLANK
+                     ,  CONCAT_WS('\', TMP1.HIERARCHY, SMB.SORT_SEQ||SMB.RT_TGT_SEQ)  AS HIERARCHY
+                     ,  CAST(CAST(
+                            CASE
+                            WHEN LEVEL + 1 BETWEEN 2 AND 9 THEN rpad(CAST(SMB.SORT_SEQ AS TEXT), (10-LEVEL + 1) * 3 + CHAR_LENGTH(CAST(SMB.SORT_SEQ AS TEXT)), '0')
+                            ELSE '0'
+                            END AS NUMERIC) + CAST(TMP1.NEW_SORT_SEQ AS NUMERIC) AS text)
+                     ,	SMB.SYS_GB_CD
+                     ,	SMB.RT_TGT_TYP_CD
+                     ,	SMB.SORT_SEQ
+                     ,	SMB.CALL_URL
+                     ,	SMB.CUST_INFO_INCL_YN
+                     ,	SMB.RMK_CONT
+                     ,	SMB.BTN_ID
+                     ,	SMB.LEAF_MENU_YN
+                     ,	SMB.USER_HELP_CONT
+                FROM    ST_RT_TGT_BASE SMB, CTE AS TMP1
+                WHERE   TMP1.RT_TGT_SEQ = SMB.UPR_RT_TGT_SEQ
+                AND     SMB.RT_TGT_TYP_CD IN ('10','20')
+            )
+            SELECT  CASE
+            			WHEN (SELECT COUNT(RT_GRP_NO) 
+            				  FROM ST_RT_INFO 
+            				  WHERE RT_GRP_NO = #{rtGrpNo} 
+            				  AND RT_TGT_SEQ = CTE.RT_TGT_SEQ 
+            				  AND RT_SUB_GB_CD = '01') > 0
+            			THEN (SELECT USE_YN 
+            				  FROM ST_RT_INFO 
+            				  WHERE RT_GRP_NO = #{rtGrpNo} 
+            				  AND RT_TGT_SEQ = CTE.RT_TGT_SEQ 
+            				  AND RT_SUB_GB_CD = '01')
+            			ELSE 'N'
+            		END AS USE_YN
+            	,	CTE.RT_TGT_SEQ
+            	,	CTE.RT_TGT_NM
+            	,	CTE.UPR_RT_TGT_SEQ
+            	,	CTE.POPUP_YN
+            	,	CTE.LEVEL
+            	,	CTE.BLANK
+            	,	CTE.HIERARCHY
+            	,	CTE.NEW_SORT_SEQ
+            	,	CTE.SYS_GB_CD
+            	,	CTE.RT_TGT_TYP_CD
+            	,	CTE.SORT_SEQ
+            	,	CTE.CALL_URL
+            	,	CTE.CUST_INFO_INCL_YN
+            	,	CTE.RMK_CONT
+            	,	CTE.BTN_ID
+            	,	CTE.LEAF_MENU_YN
+            	,	CTE.USER_HELP_CONT
+            FROM      CTE
+            ORDER BY  NEW_SORT_SEQ :: NUMERIC, RT_TGT_SEQ
     </select>
 
     <select id="getMenuInfo" parameterType="RtTargetBaseRequest" resultType="RtTargetBaseResponse">
@@ -236,7 +338,7 @@
 
     <select id="getSubMenuListCount" parameterType="RtTargetBaseRequest" resultType="java.lang.Integer">
         SELECT          /* stRtTgtBase.getSubMenuListCount */
-                COUNT(*)
+                COUNT(T1.RT_TGT_SEQ)
         FROM (
                 <include refid="subMenuList" />
         ) T1
@@ -244,7 +346,7 @@
 
     <select id="getAdminGroupList" resultType="java.lang.Integer" parameterType="com.enbiz.api.bo.app.dto.request.login.LoginRequest">
         SELECT                      /* StRtTgtBase.getAdminGroupList */
-               COUNT(*)
+               COUNT(A.RT_TGT_SEQ)
           FROM ST_RT_INFO A
              , ST_RT_TGT_BASE B
          WHERE A.RT_TGT_SEQ   = B.RT_TGT_SEQ
@@ -276,16 +378,169 @@
 
     <select id="getSubMenuCheck" parameterType="RtTargetBaseRequest" resultType="java.lang.Integer">
         SELECT                  /* stRtTgtBase.getSubMenuCheck */
-                    COUNT(*)
+                    COUNT(RT_TGT_SEQ)
         FROM        ST_RT_TGT_BASE
         WHERE       UPR_RT_TGT_SEQ = #{rtTgtSeq}
     </select>
 
     <select id="getStRtInfoCheck" parameterType="RtTargetBaseRequest" resultType="java.lang.Integer">
         SELECT                  /* stRtTgtBase.getStRtInfoCheck */
-                    COUNT(*)
+                    COUNT(RT_TGT_SEQ)
         FROM        ST_RT_INFO
         WHERE       RT_TGT_SEQ = #{rtTgtSeq}
         AND         USE_YN = 'Y'
+    </select>
+
+	<!-- 버튼의 소속 화면 조회 -->
+    <select id="selectScrRtTgtSeqByRtTgtSeq" parameterType="java.lang.String" resultType="java.lang.String">
+		WITH RECURSIVE menus AS (
+	        SELECT		/* selectScrRtTgtSeqByRtTgtSeq */
+	        	rt_tgt_seq, 
+	        	sys_gb_cd, 
+	        	rt_tgt_typ_cd, 
+	        	rt_tgt_nm, 
+	        	upr_rt_tgt_seq, 
+	        	10 AS level
+	        FROM st_rt_tgt_base
+	        WHERE rt_tgt_seq = #{rtTgtSeq}
+	        and USE_YN = 'Y'
+		    UNION ALL
+	        SELECT 
+	        	e.rt_tgt_seq, 
+	        	e.sys_gb_cd, 
+	        	e.rt_tgt_typ_cd, 
+	        	e.rt_tgt_nm, 
+	        	e.upr_rt_tgt_seq, 
+	        	menus.level - 1 AS level
+	        FROM st_rt_tgt_base e
+	        JOIN menus ON menus.upr_rt_tgt_seq = e.rt_tgt_seq
+	        where USE_YN = 'Y' 
+		)
+		select  
+        	max (rt_tgt_seq) 
+		from menus
+		where level = (
+			select max(level) as max_level 
+			from menus
+			where rt_tgt_typ_cd = '20'
+		)
+    </select>
+
+	<select id="getIndividualMenuTreeList" parameterType="RtTargetBaseRequest" resultType="RtTargetBaseResponse">
+        WITH RECURSIVE CTE AS (       /* stRtTgtBase.getIndividualMenuTreeList */
+                SELECT  A.USE_YN
+                	 ,	A.SYS_GB_CD
+                	 ,	A.RT_TGT_TYP_CD
+                	 ,	A.SORT_SEQ
+                	 ,	A.CUST_INFO_INCL_YN
+                	 ,	A.POPUP_YN
+                	 ,	A.LEAF_MENU_YN
+                	 ,	A.RT_TGT_SEQ
+                     ,  A.RT_TGT_NM
+                     ,  A.UPR_RT_TGT_SEQ
+                     ,  A.POPUP_YN
+                     ,  1 AS LEVEL
+                     ,  ' ' AS BLANK
+                     ,  CONCAT('\',SORT_SEQ||A.RT_TGT_SEQ)  AS HIERARCHY
+                     , '0' AS NEW_SORT_SEQ
+                FROM	ST_RT_TGT_BASE A 
+                WHERE	UPR_RT_TGT_SEQ IN ('11', '12', '31', '32')
+             UNION ALL
+                SELECT  SMB.USE_YN
+                	 ,	SMB.SYS_GB_CD
+                	 ,	SMB.RT_TGT_TYP_CD
+                	 ,	SMB.SORT_SEQ
+                	 ,	SMB.CUST_INFO_INCL_YN
+                	 ,	SMB.POPUP_YN
+                	 ,	SMB.LEAF_MENU_YN
+                	 ,	SMB.RT_TGT_SEQ
+                     ,  SMB.RT_TGT_NM
+                     ,  SMB.UPR_RT_TGT_SEQ
+                     ,  SMB.POPUP_YN
+                     ,  LEVEL + 1
+                     ,  CONCAT(TMP1.BLANK, '  ' ) AS BLANK
+                     ,  CONCAT_WS('\', TMP1.HIERARCHY, SMB.SORT_SEQ||SMB.RT_TGT_SEQ)  AS HIERARCHY
+                     ,  CAST(CAST(
+                            CASE
+                            WHEN LEVEL + 1 BETWEEN 2 AND 9 THEN rpad(CAST(SMB.SORT_SEQ AS TEXT), (10-LEVEL + 1) * 3 + CHAR_LENGTH(CAST(SMB.SORT_SEQ AS TEXT)), '0')
+                            ELSE '0'
+                            END AS NUMERIC) + CAST(TMP1.NEW_SORT_SEQ AS NUMERIC) AS text)
+                FROM    ST_RT_TGT_BASE SMB, CTE AS TMP1
+                WHERE   TMP1.RT_TGT_SEQ = SMB.UPR_RT_TGT_SEQ
+                AND     SMB.RT_TGT_TYP_CD IN ('10','20')
+            )
+            SELECT    CTE.*
+            FROM      CTE
+            ORDER BY  NEW_SORT_SEQ :: NUMERIC, RT_TGT_SEQ
+    </select>
+    
+    <select id="getIndividualMenuTreeListForUser" parameterType="RtTargetBaseRequest" resultType="RtTargetBaseResponse">
+        WITH RECURSIVE CTE AS (       /* stRtTgtBase.getIndividualMenuTreeListForUser */
+                SELECT  SRI.USE_YN
+                	 ,	A.SYS_GB_CD
+                	 ,	A.RT_TGT_TYP_CD
+                	 ,	A.SORT_SEQ
+                	 ,	A.CUST_INFO_INCL_YN
+                	 ,	A.POPUP_YN
+                	 ,	A.LEAF_MENU_YN
+                	 ,	A.RT_TGT_SEQ
+                     ,  A.RT_TGT_NM
+                     ,  A.UPR_RT_TGT_SEQ
+                     ,  A.POPUP_YN
+                     ,  1 AS LEVEL
+                     ,  ' ' AS BLANK
+                     ,  CONCAT('\',SORT_SEQ||A.RT_TGT_SEQ)  AS HIERARCHY
+                     , '0' AS NEW_SORT_SEQ
+                FROM	ST_RT_TGT_BASE A JOIN ST_RT_INFO SRI ON A.RT_TGT_SEQ = SRI.RT_TGT_SEQ 
+                WHERE	A.UPR_RT_TGT_SEQ IN ('11', '12', '31', '32')
+                AND		SRI.RT_SUB_GB_CD = #{rtSubGbCd}
+                AND		SRI.RT_GRP_NO = #{rtGrpNo}
+             UNION ALL
+                SELECT  SRI.USE_YN
+                	 ,	SMB.SYS_GB_CD
+                	 ,	SMB.RT_TGT_TYP_CD
+                	 ,	SMB.SORT_SEQ
+                	 ,	SMB.CUST_INFO_INCL_YN
+                	 ,	SMB.POPUP_YN
+                	 ,	SMB.LEAF_MENU_YN
+                	 ,	SMB.RT_TGT_SEQ
+                     ,  SMB.RT_TGT_NM
+                     ,  SMB.UPR_RT_TGT_SEQ
+                     ,  SMB.POPUP_YN
+                     ,  LEVEL + 1
+                     ,  CONCAT(TMP1.BLANK, '  ' ) AS BLANK
+                     ,  CONCAT_WS('\', TMP1.HIERARCHY, SMB.SORT_SEQ||SMB.RT_TGT_SEQ)  AS HIERARCHY
+                     ,  CAST(CAST(
+                            CASE
+                            WHEN LEVEL + 1 BETWEEN 2 AND 9 THEN rpad(CAST(SMB.SORT_SEQ AS TEXT), (10-LEVEL + 1) * 3 + CHAR_LENGTH(CAST(SMB.SORT_SEQ AS TEXT)), '0')
+                            ELSE '0'
+                            END AS NUMERIC) + CAST(TMP1.NEW_SORT_SEQ AS NUMERIC) AS text)
+                FROM    ST_RT_TGT_BASE SMB JOIN ST_RT_INFO SRI ON SMB.RT_TGT_SEQ = SRI.RT_TGT_SEQ, CTE AS TMP1
+                WHERE   TMP1.RT_TGT_SEQ = SMB.UPR_RT_TGT_SEQ
+                AND     SMB.RT_TGT_TYP_CD IN ('10','20')
+                AND		SRI.RT_SUB_GB_CD = '02'
+                AND		SRI.RT_GRP_NO = #{rtGrpNo}
+            )
+            SELECT    CTE.*
+            FROM      CTE
+            ORDER BY  NEW_SORT_SEQ :: NUMERIC, RT_TGT_SEQ
+    </select>
+    
+    <select id="getIndivMenuCheck" parameterType="RtTargetBaseRequest" resultType="int">
+    	select count(srtb.rt_tgt_seq)
+		from st_rt_tgt_base srtb 
+		left outer join st_rt_info sri on srtb.rt_tgt_seq = sri.rt_tgt_seq
+		where srtb.rt_tgt_typ_cd in ('10', '20')
+		and sri.rt_grp_no = #{rtGrpNo}
+		and sri.rt_sub_gb_cd ='02'
+    </select>
+    
+    <select id="getRightGroupMenuCheck" parameterType="RtTargetBaseRequest" resultType="int">
+    	select count(srtb.rt_tgt_seq)
+		from st_rt_tgt_base srtb 
+		left outer join st_rt_info sri on srtb.rt_tgt_seq = sri.rt_tgt_seq
+		where srtb.rt_tgt_typ_cd in ('10', '20')
+		and sri.rt_grp_no = #{rtGrpNo}
+		and sri.rt_sub_gb_cd ='01'
     </select>
 </mapper>

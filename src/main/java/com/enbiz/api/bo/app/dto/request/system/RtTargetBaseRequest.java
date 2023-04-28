@@ -12,8 +12,12 @@ import lombok.Setter;
 @Setter
 public class RtTargetBaseRequest extends BaseCommonDto {
 
-	private String sysGbCd;
-	private String rtTgtSeq;
-	private String uprRtTgtSeq;
+    private String sysGbCd;
+    private String rtTgtSeq;
+    private String uprRtTgtSeq;
 
+    private String rtGrpNo;
+    private String rtSubGbCd;
+    
+    private String indivRtNo;
 }

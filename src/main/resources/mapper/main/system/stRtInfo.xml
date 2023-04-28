@@ -18,5 +18,11 @@
         ON A.RT_TGT_SEQ = B.RT_TGT_SEQ
         WHERE RT_GRP_NO = #{userId}
     </select>
-
+    <select id="getStRtInfo" parameterType="stRtInfo" resultType="int">
+    	SELECT	COUNT(*)
+    	FROM	ST_RT_INFO
+    	WHERE	RT_GRP_NO = #{rtGrpNo}
+    	AND		RT_TGT_SEQ = #{rtTgtSeq}
+    	AND		RT_SUB_GB_CD = #{rtSubGbCd}
+    </select>
 </mapper>
