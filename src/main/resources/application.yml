@@ -83,8 +83,7 @@ spring:
       message.system.menuUsageStatusInquiry,
       message.system.userAccessHistoryInquiry,
       message.system.userFavoriteMenuMgmt,
-      message.system.passwordChange,
-      message.system.rightGroupMgmt
+      message.system.passwordChange
   cache:
     jcache:
       config: classpath:ehcache.xml
@@ -128,13 +127,14 @@ spring:
     enabled: false
   datasource:
     main:
-      #jdbc-url: jdbc:postgresql://thm-dev-product-cluster.cluster-ro-c8ozhq4tkh6g.ap-northeast-2.rds.amazonaws.com:5432/thehandsome?currentSchema=pd_adm
-      jdbc-url: jdbc:log4jdbc:postgresql://localhost:5432/postgres?currentSchema=public
-      #driver-class-name: org.postgresql.Driver
+#      jdbc-url: jdbc:log4jdbc:postgresql://183.98.233.53:55432/postgres?currentSchema=fnf
+#      driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
+#      username: postgres
+#      password: ensmart0715
+      jdbc-url: jdbc:log4jdbc:mariadb://localhost:3306/enbiz
       driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy    
-      username: enbiz
-      password: ENC(HrUDmfNQe8eFLPyowYesfad3oA9h3Rt5mGX8EkzNJBtVnC/FDw7X/ZQHr4E7xB6f)
-
+      username: root
+      password: root
       hikari:
         maximum-pool-size: 5
         minimum-idle: 5
