@@ -37,7 +37,61 @@
 		RT_SUB_GB_CD = excluded.RT_SUB_GB_CD,
 		USE_YN = excluded.USE_YN,
 		SYS_MOD_ID = excluded.SYS_MOD_ID,
-		SYS_MOD_DTM = now();
+		SYS_MOD_DTM = NOW();
+    </insert>
+    
+    <insert id="saveStRtInfoSelect" parameterType="stRtInfo">
+    	INSERT INTO ST_RT_INFO (
+    			RT_GRP_NO
+			,	RT_TGT_SEQ
+			,	RT_SUB_GB_CD
+			,	USE_YN
+			,	SYS_REG_ID
+			,	SYS_REG_DTM
+			,	SYS_MOD_ID
+			,	SYS_MOD_DTM
+    	)
+    	SELECT #{rtGrpNo}
+    		,	RT_TGT_SEQ
+    		,	'01'
+    		,	USE_YN
+    		,	#{sysRegId}
+    		,	NOW()
+    		,	#{sysModId}
+    		,	NOW()
+    	FROM	ST_RT_TGT_BASE
+    	WHERE	SYS_GB_CD = #{sysGbCd}
+    </insert>
+    
+    <update id="modifyStRtInfoUseYn" parameterType="stRtInfo">
+    	UPDATE ST_RT_INFO /* StRtInfoTrx.modifyStRtInfoUseYn */
+    		SET
+    			USE_YN = #{useYn}
+    	WHERE	RT_GRP_NO = #{rtGrpNo}
+    	AND		RT_TGT_SEQ = #{rtTgtSeq}
+    	AND		RT_SUB_GB_CD = #{rtSubGbCd}
+    </update>
+    
+    <insert id="saveStRtInfoIndiv" parameterType="stRtInfo">
+    	INSERT INTO ST_RT_INFO (
+    			RT_GRP_NO
+			,	RT_TGT_SEQ
+			,	RT_SUB_GB_CD
+			,	USE_YN
+			,	SYS_REG_ID
+			,	SYS_REG_DTM
+			,	SYS_MOD_ID
+			,	SYS_MOD_DTM
+    	)
+    	SELECT #{rtGrpNo}
+    		,	RT_TGT_SEQ
+    		,	'02'
+    		,	USE_YN
+    		,	#{sysRegId}
+    		,	NOW()
+    		,	#{sysModId}
+    		,	NOW()
+    	FROM	ST_RT_TGT_BASE
     </insert>
 
 </mapper>

@@ -1,0 +1,49 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.enbiz.api.bo.app.repository.main.system.StIndivRtBaseInfoTrxMapper">
+	
+	<insert id="saveStIndivRtBaseInfo" parameterType="StIndivRtBaseInfo">
+		INSERT INTO ST_INDIV_RT_BASE_INFO ( /* stIndivRtBaseInfoTrx.registStIndivRtBaseInfo */
+				INDIV_RT_NO
+			,	USER_ID
+			,	SYS_GB_CD
+			,	APLY_STR_DT
+			,	APLY_END_DT
+			,	USE_YN
+			,	REG_CAUS_CONT
+			,	ATCH_FILE_ROUTE_NM
+			,	ATCH_FILE_NM
+			,	SYS_REG_ID
+			,	SYS_REG_DTM
+			,	SYS_MOD_ID
+			,	SYS_MOD_DTM
+		) VALUES (
+				(SELECT 'P'||LPAD((MAX(SUBSTRING(INDIV_RT_NO,2,5)) :: INTEGER + 1) :: TEXT, 4, '0') FROM ST_INDIV_RT_BASE_INFO)
+			,	#{userId}
+			,	#{sysGbCd}
+			,	TO_CHAR(TO_TIMESTAMP(#{aplyStrDt}, 'YYYY-MM-DD'), 'YYYYMMDD')
+			,	TO_CHAR(TO_TIMESTAMP(#{aplyEndDt}, 'YYYY-MM-DD'), 'YYYYMMDD')
+			,	#{useYn}
+			,	#{regCausCont}
+			,	#{atchFileRouteNm}
+			,	#{atchFileNm}
+			,	#{sysRegId}
+			,	NOW()
+			,	#{sysModId}
+			,	NOW()
+		)
+	</insert>
+	
+	<update id="updateStIndivRtBaseInfo" parameterType="stIndivRtBaseInfo">
+		UPDATE	ST_INDIV_RT_BASE_INFO	/*StIndivRtBaseInfoTrx.updateStIndivRtBaseInfo*/
+		SET
+				APLY_STR_DT = TO_CHAR(TO_TIMESTAMP(#{aplyStrDt}, 'YYYYMMDD'), 'YYYYMMDD')
+			,	APLY_END_DT = TO_CHAR(TO_TIMESTAMP(#{aplyEndDt}, 'YYYYMMDD'), 'YYYYMMDD')
+			,	USE_YN = #{useYn}
+			,	REG_CAUS_CONT = #{regCausCont}
+			,	SYS_MOD_ID = #{sysModId}
+			,	SYS_MOD_DTM = NOW()
+		WHERE	INDIV_RT_NO = #{indivRtNo}
+	</update>
+	
+</mapper>
