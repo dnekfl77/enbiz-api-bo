@@ -83,7 +83,8 @@ spring:
       message.system.menuUsageStatusInquiry,
       message.system.userAccessHistoryInquiry,
       message.system.userFavoriteMenuMgmt,
-      message.system.passwordChange
+      message.system.passwordChange,
+      message.system.rightGroupMgmt
   cache:
     jcache:
       config: classpath:ehcache.xml
