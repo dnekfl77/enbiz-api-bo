@@ -5,8 +5,7 @@
 <mapper namespace="com.enbiz.api.bo.app.repository.main.system.StUserBaseMapper">
 
 	<sql id="paginatedBase">
-/*		LIMIT {rowsPerPage} OFFSET ({pageIdx} - 1) * {rowsPerPage} */
-		LIMIT ${rowsPerPage} OFFSET 0
+		LIMIT #{rowsPerPage} OFFSET #{offset}
 	</sql>
 
 	<sql id="userBaseList">

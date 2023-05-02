@@ -4,8 +4,7 @@
 <mapper namespace="com.enbiz.api.bo.app.repository.main.system.StGrpCdMapper">
 	<!--"com.x2commerce.backoffice.app.v1.system.dto.request.GroupCodeRequest"  -->
 	<sql id="paginatedBase">
-/*		LIMIT {rowsPerPage} OFFSET ({pageIdx} - 1) * {rowsPerPage} */
-        LIMIT #{rowsPerPage} OFFSET 0
+        LIMIT #{rowsPerPage} OFFSET #{offset}
 	</sql>
 	<!-- 공통코드 목록 조회 -->
 	<sql id="getStGrpCdListBase">
