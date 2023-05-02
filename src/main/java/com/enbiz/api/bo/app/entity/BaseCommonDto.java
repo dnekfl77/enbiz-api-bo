@@ -20,4 +20,8 @@ public class BaseCommonDto extends AbstractEntity implements Serializable {
 	private int pageIdx;
 	private boolean endPage; // 마지막페이지 여부
 
+	public int getOffset() {
+		return (pageIdx - 1) * rowsPerPage;
+	}
+
 }
