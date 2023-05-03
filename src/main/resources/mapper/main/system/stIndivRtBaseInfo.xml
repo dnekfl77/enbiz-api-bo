@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.enbiz.api.bo.app.repository.main.system.StIndivRtBaseInfoMapper">
-	
+
 	<sql id="individualRightList">
 		SELECT	SUB.USER_ID	/* stIndivRtBaseInfo.individualRightList */
     		,	SUB.USER_NM
@@ -17,25 +17,25 @@
     		,	SIRBI.SYS_MOD_ID
     		,	(SELECT USER_NM FROM ST_USER_BASE T1 WHERE SIRBI.SYS_MOD_ID = T1.USER_ID) AS SYS_MOD_NM
     		,	TO_CHAR(SIRBI.SYS_MOD_DTM, 'YYYY-MM-DD HH:mm:ss') AS SYS_MOD_DTM
-		FROM	ST_INDIV_RT_BASE_INFO SIRBI									--개별 권한 기본정보
-		JOIN	ST_USER_BASE SUB ON SIRBI.USER_ID = SUB.USER_ID				--사용자 기본
-		JOIN	ST_RT_GRP_BASE SRGB ON SRGB.RT_GRP_NO = SUB.RT_GRP_NO			--권한 그룹 기본
+		FROM	ST_INDIV_RT_BASE_INFO SIRBI									-- 개별 권한 기본정보
+		JOIN	ST_USER_BASE SUB ON SIRBI.USER_ID = SUB.USER_ID				-- 사용자 기본
+		JOIN	ST_RT_GRP_BASE SRGB ON SRGB.RT_GRP_NO = SUB.RT_GRP_NO			-- 권한 그룹 기본
 		<where>
 			1=1
 			<if test="userId != null and userId != ''">
 				AND SIRBI.USER_ID = #{userId}
 			</if>
 			<if test="rtGrpNm != null and rtGrpNm != ''">
-				AND SRGB.RT_GRP_NM LIKE '%' || #{rtGrpNm} || '%'
+				AND SRGB.RT_GRP_NM LIKE CONCAT('%', #{rtGrpNm}, '%')
 			</if>
 		</where>
 		ORDER BY SIRBI.SYS_REG_DTM DESC
 	</sql>
-    
+
     <select id="getIndividualRightList" parameterType="IndividualRtInfoRequest" resultType="IndividualRtInfoResponse">
     	<include refid="individualRightList" />
     </select>
-    
+
     <select id="getIndividualRightListCount" parameterType="IndividualRtInfoRequest" resultType="java.lang.Integer">
     	/* stIndivRtBaseInfo.getIndividualRightListCount */
     	SELECT	COUNT(T1.INDIV_RT_NO)
@@ -43,12 +43,12 @@
     		<include refid="individualRightList" />
     	) T1
     </select>
-    
+
     <select id="getIndividualRightCountForCheck" parameterType="String" resultType="java.lang.Integer">
     	/* stIndivRtBaseInfo.getIndividualRightCountForCheck */
     	SELECT	COUNT(INDIV_RT_NO)
     	FROM	ST_INDIV_RT_BASE_INFO
     	WHERE	USER_ID = #{userId}
     </select>
-    
+
 </mapper>
