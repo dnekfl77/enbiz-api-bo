@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Repository;
 
+import com.enbiz.api.bo.app.dto.request.system.StBatchLogRequest;
+import com.enbiz.api.bo.app.dto.response.system.StBatchLogResponse;
 import com.enbiz.api.bo.app.entity.StBatchLogEx;
 import com.enbiz.api.bo.app.entity.StLinkLogEx;
 
@@ -46,5 +48,22 @@ public interface StBatchLogMapper {
 	 * @throws Exception
 	 */
 	List<StLinkLogEx> getInterLockingLogList(StLinkLogEx stLinkLogEx) throws Exception;
+	
+	
+    /*
+     * 배치 로그 목록 수 조회
+     * @param stBatchLogRequest
+     * @return int
+     * @throws Exception
+     */
+    int getBatchLogListCount(StBatchLogRequest stBatchLogRequest) throws Exception;
+    
+    /*
+     * 배치 로그 목록 조회
+     * @param stBatchLogRequest
+     * @return List<StBatchLogResponse>
+     * @throws Exception
+     */
+    List<StBatchLogResponse> getBatchLogList(StBatchLogRequest stBatchLogRequest) throws Exception;	
 
 }
