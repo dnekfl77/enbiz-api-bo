@@ -5,12 +5,12 @@
 <mapper namespace="com.enbiz.api.bo.app.repository.main.system.StLoginLogMapper">
 
 	<sql id="paginatedBase">
-		LIMIT ${rowsPerPage} OFFSET (${pageIdx} - 1) * ${rowsPerPage}
+		LIMIT #{rowsPerPage} OFFSET #{offset}
 	</sql>
 
 	<sql id="getLastLoginInfoListBase">
 		SELECT 					/* StLoginLog.getLastLoginInfoListBase */
-				  FN_GET_CODENAME('UR005', SLL.SYS_GB_CD) AS SYS_GB_NM
+				  (SELECT CD_NM FROM ST_STD_CD WHERE GRP_CD = 'UR005' AND CD = SLL.SYS_GB_CD) AS SYS_GB_NM
 		      	, SUB.USER_ID
 		      	, SUB.USER_NM
 		      	, TO_CHAR(MAX(SLL.LOGIN_DTM), 'YYYY-MM-DD HH24:MI:SS') AS LOGIN_DTM
@@ -20,9 +20,9 @@
 	  	  FROM 	  ST_USER_BASE SUB
 	      	  	, ST_LOGIN_LOG SLL
 		 WHERE 	  SUB.USER_ID = SLL.USER_ID
-		 AND 	  SLL.SYS_GB_CD LIKE #{sysGbCd} ||'%'
-		 AND 	  SUB.USER_ID 	LIKE #{userIdConditionParam} ||'%'
-		 AND 	  SUB.USER_NM 	LIKE #{userNmConditionParam} ||'%'
+		 AND 	  SLL.SYS_GB_CD LIKE CONCAT(#{sysGbCd}, '%')
+		 AND 	  SUB.USER_ID 	LIKE CONCAT(#{userIdConditionParam}, '%')
+		 AND 	  SUB.USER_NM 	LIKE CONCAT(#{userNmConditionParam}, '%')
 		 GROUP BY SLL.SYS_GB_CD, SUB.USER_ID, SUB.USER_NM, SUB.PWD_LOCK_YN
 		 ORDER BY MAX(SLL.LOGIN_DTM) DESC
 	</sql>

@@ -3,32 +3,32 @@
 
 <mapper namespace="com.enbiz.api.bo.app.repository.main.system.StBatchLogMapper">
 	<sql id="paginatedBase">
-		LIMIT ${rowsPerPage} OFFSET (${pageIdx} - 1) * ${rowsPerPage}
+		LIMIT #{rowsPerPage} OFFSET #{offset}
 	</sql>
-	
+
 	<sql id="batchLogList">
-		SELECT 	
-				BJE.JOB_EXECUTION_ID 
-	  		,	TO_CHAR(BJE.CREATE_TIME, 'YYYY-MM-DD') AS CREATE_TIME 
-	  		,	BJI.JOB_NAME 
+		SELECT
+				BJE.JOB_EXECUTION_ID
+	  		,	TO_CHAR(BJE.CREATE_TIME, 'YYYY-MM-DD') AS CREATE_TIME
+	  		,	BJI.JOB_NAME
 	  		,	(SELECT CD_NM FROM ST_STD_CD SSC WHERE SSC.GRP_CD = 'CM008' AND SSC.CD = BJE.STATUS) AS STATUS
 	  		,	BJE.EXIT_MESSAGE
 	  		,	TO_CHAR(BJE.START_TIME, 'YYYY-MM-DD') AS START_TIME
 	  		,	TO_CHAR(BJE.END_TIME, 'YYYY-MM-DD') AS END_TIME
 		FROM 	BATCH_JOB_EXECUTION	BJE
-		JOIN	BATCH_JOB_INSTANCE BJI ON BJE.JOB_INSTANCE_ID = BJI.JOB_INSTANCE_ID 
+		JOIN	BATCH_JOB_INSTANCE BJI ON BJE.JOB_INSTANCE_ID = BJI.JOB_INSTANCE_ID
 		<where>
 			<if test="createTime != null and createTime != ''">
                 AND REPLACE(#{createTime}, '-', '') = TO_CHAR(CREATE_TIME, 'YYYYMMDD')
-            </if>    
+            </if>
 			<if test="jobName != null and jobName != ''">
-				AND JOB_NAME LIKE '%' || #{jobName} || '%'
+				AND JOB_NAME LIKE CONCAT('%', #{jobName}, '%')
 			</if>
-				AND STATUS LIKE #{status} || '%'
+				AND STATUS LIKE CONCAT(#{status}, '%')
 		</where>
 		ORDER BY CREATE_TIME DESC
 	</sql>
-	
+
 	<select id="getBatchLogListCount" parameterType="StBatchLogRequest" resultType="java.lang.Integer">
 		/* stBatchLog.getBatchLogListCount */
 		SELECT	COUNT(T1.JOB_EXECUTION_ID)
@@ -36,7 +36,7 @@
 			<include refid="batchLogList" />
 		) T1
 	</select>
-	
+
 	<select id="getBatchLogList" parameterType="StBatchLogRequest" resultType="StBatchLogResponse">
 		/* stBatchLog.getBatchLogList */
 		<include refid="batchLogList" />
