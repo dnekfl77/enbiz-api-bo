@@ -1,0 +1,812 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.enbiz.api.bo.app.repository.main.adjust.AcOpOrdDtlMapper">
+	<sql id="paginatedBase">
+	    <if test="excelYn == null or excelYn.equals('N')">
+	    LIMIT ${rowsPerPage} OFFSET (${pageIdx} - 1) * ${rowsPerPage}
+	    </if>
+	</sql>
+	
+	<!-- 매출내역조회 -->
+	<select id="getSalesDetailsListCount" parameterType="SalesDetailsRequest" resultType="java.lang.Integer">
+		SELECT	/* acOpOrdDtlMapper.getSalesDetailsListCount */
+				COUNT(1)
+		FROM	(
+		<include refid="getSalesDetails" />
+		) AA
+		<include refid="getSalesDetailsWhere" />
+	</select>
+	
+	<select id="getSalesDetailsList" parameterType="SalesDetailsRequest" resultType="SalesDetailsResponse">
+		SELECT	/* acOpOrdDtlMapper.getSalesDetailsList */
+				*
+		FROM	(
+		<include refid="getSalesDetails" />
+		) AA
+		<include refid="getSalesDetailsWhere" />
+		ORDER BY	AA.ORD_NO DESC, AA.ORD_SEQ, AA.SALE_GB
+		<include refid="paginatedBase" />
+	</select>
+	
+	<select id="getSalesDetailsListSum" parameterType="SalesDetailsRequest" resultType="SalesDetailsResponse">
+		SELECT	/* acOpOrdDtlMapper.getSalesDetailsListSum */
+				COALESCE(SUM(ORD_QTY), 0)			AS SUM_ORD_QTY
+		,		COALESCE(SUM(NOR_PRC), 0)			AS SUM_NOR_PRC
+		,		COALESCE(SUM(SALE_PRC), 0)			AS SUM_SALE_PRC
+		,		COALESCE(SUM(CPN_SUM), 0)			AS SUM_CPN_SUM
+		,		COALESCE(SUM(CPN_GOODS_OUR), 0)		AS SUM_CPN_GOODS_OUR
+		,		COALESCE(SUM(CPN_GOODS_ENTR), 0)	AS SUM_CPN_GOODS_ENTR
+		,		COALESCE(SUM(CPN_BSKET_OUR), 0)		AS SUM_CPN_BSKET_OUR
+		,		COALESCE(SUM(CPN_BSKET_ENTR), 0)	AS SUM_CPN_BSKET_ENTR
+		,		COALESCE(SUM(CPN_OVLP_OUR), 0)		AS SUM_CPN_OVLP_OUR
+		,		COALESCE(SUM(CPN_OVLP_ENTR), 0)		AS SUM_CPN_OVLP_ENTR
+		,		COALESCE(SUM(CPN_STAF_OUR), 0)		AS SUM_CPN_STAF_OUR
+		,		COALESCE(SUM(CPN_STAF_ENTR), 0)		AS SUM_CPN_STAF_ENTR
+		,		COALESCE(SUM(PAY_SUM), 0)			AS SUM_PAY_SUM
+		,		COALESCE(SUM(PAY_PG), 0)			AS SUM_PAY_PG
+		,		COALESCE(SUM(PAY_MILG), 0)			AS SUM_PAY_MILG
+		,		COALESCE(SUM(PAY_EM), 0)			AS SUM_PAY_EM
+		,		COALESCE(SUM(PAY_HP), 0)			AS SUM_PAY_HP
+		,		COALESCE(SUM(CMSN_PRC), 0)			AS SUM_CMSN_PRC
+		,		COALESCE(SUM(ERP_SUM), 0)			AS SUM_ERP_SUM
+		,		COALESCE(SUM(ERP_PG), 0)			AS SUM_ERP_PG
+		,		COALESCE(SUM(ERP_MILG), 0)			AS SUM_ERP_MILG
+		,		COALESCE(SUM(ERP_EM), 0)			AS SUM_ERP_EM
+		,		COALESCE(SUM(ERP_HP), 0)			AS SUM_ERP_HP
+		,		COALESCE(SUM(DIFF_AMT), 0)			AS SUM_DIFF_AMT
+		FROM	(
+		<include refid="getSalesDetails" />
+		) AA
+		<include refid="getSalesDetailsWhere" />
+	</select>
+	
+	<sql id="getSalesDetails">
+		SELECT	COALESCE(A.ORD_NO, SPLIT_PART(AESCI.SLS_PK, '_', 1))	AS ORD_NO					--주문번호
+		,		COALESCE(A.ORD_SEQ, SPLIT_PART(AESCI.SLS_PK, '_', 2))	AS ORD_SEQ					--주문순번
+		,		TO_CHAR(A.ORD_DTM, 'YYYY-MM-DD')						AS ORD_DTM					--주문일자
+		,		COALESCE(A.SALE_DTM, CAST(AESCI.SLS_DT AS TIMESTAMP))	AS SALE_DTM					--매출일자
+		,		COALESCE(A.SALE_GB, CASE AESCI.SLS_KD WHEN '1' THEN '판매' ELSE '환입' END)	AS SALE_GB	--판매구분
+		,		COALESCE(A.ORD_QTY, AESCI.SLS_QTY)						AS ORD_QTY					--판매수량
+		,		A.NOR_PRC																			--정상금액
+		,		COALESCE(A.SALE_PRC, AESCI.SLS_AMT)						AS SALE_PRC					--판매금액(A)
+		,		A.CPN_SUM																			--쿠폰금액/합계(B)
+		,		A.CPN_GOODS_OUR																		--쿠폰금액/상품/자사
+		,		A.CPN_GOODS_ENTR																	--쿠폰금액/상품/업체
+		,		A.CPN_BSKET_OUR																		--쿠폰금액/장바구니/자사
+		,		A.CPN_BSKET_ENTR																	--쿠폰금액/장바구니/업체
+		,		A.CPN_OVLP_OUR																		--쿠폰금액/중복할인/자사
+		,		A.CPN_OVLP_ENTR																		--쿠폰금액/중복할인/업체
+		,		A.CPN_STAF_OUR																		--쿠폰금액/임직원할인/자사
+		,		A.CPN_STAF_ENTR																		--쿠폰금액/임직원할인/업체
+		,		A.PAY_SUM																			--BO/BO결제금액(C=A-B)
+		,		A.PAY_PG																			--BO/PG
+		,		A.PAY_MILG																			--BO/마일리지
+		,		A.PAY_EM																			--BO/e-money
+		,		A.PAY_HP																			--BO/H.Point
+		,		A.CMSN_RATE||'%'										AS CMSN_RATE				--BO/업체수수료율
+		,		A.CMSN_PRC																			--BO/업체수수료
+		,		A.ENTR_NO
+		,		A.ENTR_NM																			--BO/업체
+		,		AESCI.SLS_AMT											AS ERP_SUM					--ERP/ERP결제액(D)
+		,		AESCI.PG_AMT											AS ERP_PG					--ERP/PG결제금액
+		,		AESCI.MNFG_MLG_AMT										AS ERP_MILG					--ERP/마일리지
+		,		AESCI.E_GIFT_CRD_USE_AMT								AS ERP_EM					--ERP/e-money
+		,		AESCI.HP_USE_PNT										AS ERP_HP					--ERP/H.Point
+		,		COALESCE(A.PAY_SUM, 0) - COALESCE(AESCI.SLS_AMT, 0)		AS DIFF_AMT					--차액(C-D)
+		,		CASE
+					WHEN AESCI.SLS_PK IS NULL THEN '2'
+					WHEN A.ORD_NO IS NULL THEN '3'
+					WHEN COALESCE(A.PAY_SUM, 0) - COALESCE(AESCI.SLS_AMT, 0) = 0 THEN '0'
+					WHEN COALESCE(A.PAY_SUM, 0) - COALESCE(AESCI.SLS_AMT, 0) != 0 THEN '1'
+					ELSE '9'
+				END		AS COMPARE_RESULT_CD--대사결과코드
+		,		CASE
+					WHEN AESCI.SLS_PK IS NULL THEN 'ERP누락'
+					WHEN A.ORD_NO IS NULL THEN 'BO시스템누락'
+					WHEN COALESCE(A.PAY_SUM, 0) - COALESCE(AESCI.SLS_AMT, 0) = 0 THEN '금액일치'
+					WHEN COALESCE(A.PAY_SUM, 0) - COALESCE(AESCI.SLS_AMT, 0) != 0 THEN '금액불일치'
+					ELSE '기타'
+				END		AS COMPARE_RESULT	--대사결과
+		,		COALESCE(AESCIEA.DISCORD_DESC, '')						AS DSCD_CAUS					--불일치사유
+		,		A.ERP_TRANS_YN																			--ERP전송여부
+		,		A.ADJ_CLOSE_YN																			--매출마감여부
+		,		A.SALE_GB_CD																			--판매/환입 구분
+		FROM	(
+				--판매
+				SELECT	OOD.ORD_NO								--주문번호
+				,		OOD.ORD_SEQ								--주문순번
+				,		OOD.ORD_ACCP_DTM		AS ORD_DTM		--주문일자*
+				,		OOD.ORD_FNSH_DTM		AS SALE_DTM		--매출일자(주문완료일자)*
+				,		'판매'					AS SALE_GB		--판매구분
+				,		OOD.ORD_QTY								--주문수량*
+				,		OOD.NOR_PRC								--정상금액
+				,		OOD.DC_STD_PRC			AS SALE_PRC		--판매금액(A)
+				,		OOAC.CPN_GOODS + OOAC.CPN_BSKET + OOAC.CPN_OVLP + OOAC.CPN_STAF	AS CPN_SUM	--쿠폰금액/합계(B)
+				,		OOAC.CPN_GOODS_OUR						--쿠폰금액/상품/자사
+				,		OOAC.CPN_GOODS_ENTR						--쿠폰금액/상품/업체
+				,		OOAC.CPN_BSKET_OUR						--쿠폰금액/장바구니/자사
+				,		OOAC.CPN_BSKET_ENTR						--쿠폰금액/장바구니/업체
+				,		OOAC.CPN_OVLP_OUR						--쿠폰금액/중복할인/자사
+				,		OOAC.CPN_OVLP_ENTR						--쿠폰금액/중복할인/업체
+				,		OOAC.CPN_STAF_OUR						--쿠폰금액/임직원할인/자사
+				,		OOAC.CPN_STAF_ENTR						--쿠폰금액/임직원할인/업체
+				,		OOAC.PAY_SUM							--BO/BO결제금액(C=A-B)
+				,		OOAC.PAY_SUM - (OOAC.PAY_MILG + OOAC.PAY_EM + OOAC.PAY_HP)		AS PAY_PG	--BO/PG
+				,		OOAC.PAY_MILG							--BO/마일리지
+				,		OOAC.PAY_EM								--BO/e-money
+				,		OOAC.PAY_HP								--BO/H.Point
+				,		ACCI.CMSN_RATE							--BO/업체수수료율
+				,		OOD.NOR_PRC * ACCI.CMSN_RATE / 100	AS CMSN_PRC	--BO/업체수수료
+				,		OOD.ENTR_NO
+				,		EEB.ENTR_NM								--BO/업체
+				,		OOD.SALE_TRNS_YN		AS ERP_TRANS_YN	--ERP전송여부*
+				,		OOD.SALE_ADJ_CLOSE_YN	AS ADJ_CLOSE_YN	--매출마감여부*
+				,		'1'						AS SLS_KD		--판매/환입 구분(ERP JOIN)*
+				,		'10'					AS SALE_GB_CD	--판매/환입 구분*
+				FROM	OP_ORD_DTL OOD	--주문상세
+				INNER JOIN (
+						SELECT	ORD_NO
+						,		ORD_SEQ
+						,		SUM(CASE WHEN ADTN_DTL_GB_CD = '11' THEN APLY_ADTN_AMT ELSE 0 END)													AS CPN_GOODS		--쿠폰금액/상품
+						,		SUM(CASE WHEN ADTN_DTL_GB_CD = '11' THEN APLY_ADTN_AMT * OUR_CHRG_RATE / 100 ELSE 0 END)							AS CPN_GOODS_OUR	--쿠폰금액/상품/자사
+						,		SUM(CASE WHEN ADTN_DTL_GB_CD = '11' THEN APLY_ADTN_AMT * ENTR_CHRG_RATE / 100 ELSE 0 END)							AS CPN_GOODS_ENTR	--쿠폰금액/상품/업체
+						,		SUM(CASE WHEN ADTN_DTL_GB_CD = '12' OR ADTN_DTL_GB_CD = '19' THEN APLY_ADTN_AMT ELSE 0 END)							AS CPN_BSKET		--쿠폰금액/장바구니
+						,		SUM(CASE WHEN ADTN_DTL_GB_CD = '12' OR ADTN_DTL_GB_CD = '19' THEN APLY_ADTN_AMT * OUR_CHRG_RATE / 100 ELSE 0 END)	AS CPN_BSKET_OUR	--쿠폰금액/장바구니/자사
+						,		SUM(CASE WHEN ADTN_DTL_GB_CD = '12' OR ADTN_DTL_GB_CD = '19' THEN APLY_ADTN_AMT * ENTR_CHRG_RATE / 100 ELSE 0 END)	AS CPN_BSKET_ENTR	--쿠폰금액/장바구니/업체
+						,		SUM(CASE WHEN ADTN_DTL_GB_CD = '13' OR ADTN_DTL_GB_CD = '17' THEN APLY_ADTN_AMT ELSE 0 END)							AS CPN_OVLP			--쿠폰금액/중복할인
+						,		SUM(CASE WHEN ADTN_DTL_GB_CD = '13' OR ADTN_DTL_GB_CD = '17' THEN APLY_ADTN_AMT * OUR_CHRG_RATE / 100 ELSE 0 END)	AS CPN_OVLP_OUR		--쿠폰금액/중복할인/자사
+						,		SUM(CASE WHEN ADTN_DTL_GB_CD = '13' OR ADTN_DTL_GB_CD = '17' THEN APLY_ADTN_AMT * ENTR_CHRG_RATE / 100 ELSE 0 END)	AS CPN_OVLP_ENTR	--쿠폰금액/중복할인/업체
+						,		SUM(CASE WHEN ADTN_DTL_GB_CD = '18' THEN APLY_ADTN_AMT ELSE 0 END)													AS CPN_STAF			--쿠폰금액/임직원
+						,		SUM(CASE WHEN ADTN_DTL_GB_CD = '18' THEN APLY_ADTN_AMT * OUR_CHRG_RATE / 100 ELSE 0 END)							AS CPN_STAF_OUR		--쿠폰금액/임직원/자사
+						,		SUM(CASE WHEN ADTN_DTL_GB_CD = '18' THEN APLY_ADTN_AMT * ENTR_CHRG_RATE / 100 ELSE 0 END)							AS CPN_STAF_ENTR	--쿠폰금액/임직원/업체
+						--
+						,		SUM(CASE WHEN ADTN_DTL_GB_CD = '50' THEN APLY_ADTN_AMT ELSE 0 END)		AS PAY_SUM		--결제배분/SUM
+						,		SUM(CASE WHEN ADTN_DTL_GB_CD = '52' THEN APLY_ADTN_AMT ELSE 0 END)		AS PAY_HP		--결제배분/H.Point
+						,		SUM(CASE WHEN ADTN_DTL_GB_CD = '53' THEN APLY_ADTN_AMT ELSE 0 END)		AS PAY_MILG		--결제배분/마일리지
+						,		SUM(CASE WHEN ADTN_DTL_GB_CD = '54' THEN APLY_ADTN_AMT ELSE 0 END)		AS PAY_EM		--결제배분/e-money
+						FROM	OP_ORD_ADTN_COST
+						WHERE	ADTN_OCUR_GB_CD = '10'		--부가비용 발생*
+						AND		ADTN_GB_CD IN ('10', '40')	--할인, 결제배분
+						GROUP BY ORD_NO, ORD_SEQ
+				) OOAC	--주문부가비용
+					ON	OOD.ORD_NO = OOAC.ORD_NO
+					AND	OOD.ORD_SEQ = OOAC.ORD_SEQ
+				INNER JOIN ET_ENTR_BASE EEB	--협력사기본
+					ON	OOD.ENTR_NO = EEB.ENTR_NO
+				LEFT OUTER JOIN AC_CLM_CMSN_INFO ACCI	--청구수수료정보
+					ON	OOD.ORD_FNSH_DTM BETWEEN ACCI.APLY_STR_DTM AND ACCI.APLY_END_DTM
+					AND	OOD.ENTR_NO = ACCI.ENTR_NO
+					AND	OOD.TAX_GB_CD = ACCI.TAX_GB_CD
+				WHERE	OOD.ORD_FNSH_DTM IS NOT NULL	--*
+				AND		OOD.SALE_TRNS_TGT_YN = 'Y'		--*
+				UNION ALL
+				--환입
+				SELECT	OOD.ORD_NO								--주문번호
+				,		OOD.ORD_SEQ								--주문순번
+				,		OOD.ORD_ACCP_DTM		AS ORD_DTM		--주문일자*
+				,		OOD.ORD_CNCL_DTM		AS SALE_DTM		--매출일자(주문취소일자)*
+				,		'환입'					AS SALE_GB		--판매구분
+				,		OOD.CNCL_QTY * (-1)						--주문(취소)수량*
+				,		OOD.NOR_PRC * (-1)						--정상금액
+				,		OOD.DC_STD_PRC * (-1)	AS SALE_PRC		--판매금액(A)
+				,		(OOAC.CPN_GOODS + OOAC.CPN_BSKET + OOAC.CPN_OVLP + OOAC.CPN_STAF) * (-1)	AS CPN_SUM	--쿠폰금액/합계(B)
+				,		OOAC.CPN_GOODS_OUR * (-1)				--쿠폰금액/상품/자사
+				,		OOAC.CPN_GOODS_ENTR * (-1)				--쿠폰금액/상품/업체
+				,		OOAC.CPN_BSKET_OUR * (-1)				--쿠폰금액/장바구니/자사
+				,		OOAC.CPN_BSKET_ENTR * (-1)				--쿠폰금액/장바구니/업체
+				,		OOAC.CPN_OVLP_OUR * (-1)				--쿠폰금액/중복할인/자사
+				,		OOAC.CPN_OVLP_ENTR * (-1)				--쿠폰금액/중복할인/업체
+				,		OOAC.CPN_STAF_OUR * (-1)				--쿠폰금액/임직원할인/자사
+				,		OOAC.CPN_STAF_ENTR * (-1)				--쿠폰금액/임직원할인/업체
+				,		OOAC.PAY_SUM * (-1)						--BO/BO결제금액(C=A-B)
+				,		(OOAC.PAY_SUM - (OOAC.PAY_MILG + OOAC.PAY_EM + OOAC.PAY_HP)) * (-1)			AS PAY_PG	--BO/PG
+				,		OOAC.PAY_MILG * (-1)					--BO/마일리지
+				,		OOAC.PAY_EM * (-1)						--BO/e-money
+				,		OOAC.PAY_HP * (-1)						--BO/H.Point
+				,		ACCI.CMSN_RATE							--BO/업체수수료율
+				,		OOD.NOR_PRC * ACCI.CMSN_RATE / 100 * (-1)	--BO/업체수수료
+				,		OOD.ENTR_NO
+				,		EEB.ENTR_NM								--BO/업체
+				,		OOD.RTN_SALE_TRNS_YN	AS ERP_TRANS_YN	--ERP전송여부*
+				,		OOD.RTN_ADJ_CLOSE_YN	AS ADJ_CLOSE_YN	--매출마감여부*
+				,		'6'						AS SLS_KD		--판매/환입 구분(ERP JOIN)*
+				,		'20'					AS SALE_GB_CD	--판매/환입 구분*
+				FROM	OP_ORD_DTL OOD	--주문상세
+				INNER JOIN (
+						SELECT	ORD_NO
+						,		ORD_SEQ
+						,		SUM(CASE WHEN ADTN_DTL_GB_CD = '11' THEN APLY_ADTN_AMT ELSE 0 END)													AS CPN_GOODS		--쿠폰금액/상품
+						,		SUM(CASE WHEN ADTN_DTL_GB_CD = '11' THEN APLY_ADTN_AMT * OUR_CHRG_RATE / 100 ELSE 0 END)							AS CPN_GOODS_OUR	--쿠폰금액/상품/자사
+						,		SUM(CASE WHEN ADTN_DTL_GB_CD = '11' THEN APLY_ADTN_AMT * ENTR_CHRG_RATE / 100 ELSE 0 END)							AS CPN_GOODS_ENTR	--쿠폰금액/상품/업체
+						,		SUM(CASE WHEN ADTN_DTL_GB_CD = '12' OR ADTN_DTL_GB_CD = '19' THEN APLY_ADTN_AMT ELSE 0 END)							AS CPN_BSKET		--쿠폰금액/장바구니
+						,		SUM(CASE WHEN ADTN_DTL_GB_CD = '12' OR ADTN_DTL_GB_CD = '19' THEN APLY_ADTN_AMT * OUR_CHRG_RATE / 100 ELSE 0 END)	AS CPN_BSKET_OUR	--쿠폰금액/장바구니/자사
+						,		SUM(CASE WHEN ADTN_DTL_GB_CD = '12' OR ADTN_DTL_GB_CD = '19' THEN APLY_ADTN_AMT * ENTR_CHRG_RATE / 100 ELSE 0 END)	AS CPN_BSKET_ENTR	--쿠폰금액/장바구니/업체
+						,		SUM(CASE WHEN ADTN_DTL_GB_CD = '13' OR ADTN_DTL_GB_CD = '17' THEN APLY_ADTN_AMT ELSE 0 END)							AS CPN_OVLP			--쿠폰금액/중복할인
+						,		SUM(CASE WHEN ADTN_DTL_GB_CD = '13' OR ADTN_DTL_GB_CD = '17' THEN APLY_ADTN_AMT * OUR_CHRG_RATE / 100 ELSE 0 END)	AS CPN_OVLP_OUR		--쿠폰금액/중복할인/자사
+						,		SUM(CASE WHEN ADTN_DTL_GB_CD = '13' OR ADTN_DTL_GB_CD = '17' THEN APLY_ADTN_AMT * ENTR_CHRG_RATE / 100 ELSE 0 END)	AS CPN_OVLP_ENTR	--쿠폰금액/중복할인/업체
+						,		SUM(CASE WHEN ADTN_DTL_GB_CD = '18' THEN APLY_ADTN_AMT ELSE 0 END)													AS CPN_STAF			--쿠폰금액/임직원
+						,		SUM(CASE WHEN ADTN_DTL_GB_CD = '18' THEN APLY_ADTN_AMT * OUR_CHRG_RATE / 100 ELSE 0 END)							AS CPN_STAF_OUR		--쿠폰금액/임직원/자사
+						,		SUM(CASE WHEN ADTN_DTL_GB_CD = '18' THEN APLY_ADTN_AMT * ENTR_CHRG_RATE / 100 ELSE 0 END)							AS CPN_STAF_ENTR	--쿠폰금액/임직원/업체
+						--
+						,		SUM(CASE WHEN ADTN_DTL_GB_CD = '50' THEN APLY_ADTN_AMT ELSE 0 END)		AS PAY_SUM		--결제배분/SUM
+						,		SUM(CASE WHEN ADTN_DTL_GB_CD = '52' THEN APLY_ADTN_AMT ELSE 0 END)		AS PAY_HP		--결제배분/H.Point
+						,		SUM(CASE WHEN ADTN_DTL_GB_CD = '53' THEN APLY_ADTN_AMT ELSE 0 END)		AS PAY_MILG		--결제배분/마일리지
+						,		SUM(CASE WHEN ADTN_DTL_GB_CD = '54' THEN APLY_ADTN_AMT ELSE 0 END)		AS PAY_EM		--결제배분/e-money
+						FROM	OP_ORD_ADTN_COST
+						WHERE	ADTN_OCUR_GB_CD = '20'		--부가비용 취소*
+						AND		ADTN_GB_CD IN ('10', '40')	--할인, 결제배분
+						GROUP BY ORD_NO, ORD_SEQ
+				) OOAC	--주문부가비용
+					ON	OOD.ORD_NO = OOAC.ORD_NO
+					AND	OOD.ORD_SEQ = OOAC.ORD_SEQ
+				INNER JOIN ET_ENTR_BASE EEB	--협력사기본
+					ON	OOD.ENTR_NO = EEB.ENTR_NO
+				LEFT OUTER JOIN AC_CLM_CMSN_INFO ACCI	--청구수수료정보
+					ON	OOD.ORD_CNCL_DTM BETWEEN ACCI.APLY_STR_DTM AND ACCI.APLY_END_DTM
+					AND	OOD.ENTR_NO = ACCI.ENTR_NO
+					AND	OOD.TAX_GB_CD = ACCI.TAX_GB_CD
+				WHERE	OOD.ORD_CNCL_DTM IS NOT NULL	--*
+				AND		OOD.RTN_SALE_TRNS_TGT_YN = 'Y'	--*
+		) A
+		FULL OUTER JOIN AC_ERP_SALE_COPR_INFO AESCI	--ERP매출대사정보
+			ON	A.ORD_NO||'_'||A.ORD_SEQ = AESCI.SLS_PK
+			AND	A.SLS_KD = AESCI.SLS_KD
+		LEFT OUTER JOIN AC_ERP_SALE_COPR_INFO_ETC_ADJ AESCIEA	--ERP매출대사정보_기타정산
+			ON	A.ORD_NO = AESCIEA.ORD_NO
+			AND	A.ORD_SEQ = AESCIEA.ORD_SEQ
+			AND	A.SALE_GB_CD = AESCIEA.SALE_GB_CD
+	</sql>
+	
+	<sql id="getSalesDetailsWhere">
+		WHERE	1=1
+		<if test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+		AND 	AA.SALE_DTM BETWEEN CAST(#{startDate} AS TIMESTAMP) AND CAST(#{endDate}||' 235959.999999' AS TIMESTAMP)
+		</if>
+		<if test="ordNo != null and ordNo != ''">
+		AND 	AA.ORD_NO LIKE '%'||#{ordNo}||'%'
+		</if>
+		<if test="saleGb != null and saleGb != ''">
+		AND 	AA.SALE_GB_CD = #{saleGb}
+		</if>
+		<if test="erpTransYn != null and erpTransYn != ''">
+		AND 	AA.ERP_TRANS_YN = #{erpTransYn}
+		</if>
+		<if test="adjCloseYn != null and adjCloseYn != ''">
+		AND 	AA.ADJ_CLOSE_YN = #{adjCloseYn}
+		</if>
+		<if test="compareResult != null and compareResult != ''">
+		AND 	AA.COMPARE_RESULT_CD = #{compareResult}
+		</if>
+		<if test="entrNo != null and entrNo != ''">
+		AND 	AA.ENTR_NO = #{entrNo}
+		</if>
+	</sql>
+	
+	<select id="getSalesCloseValidation" parameterType="SalesDetailsRequest" resultType="SalesDetailsResponse">
+		SELECT	/* acOpOrdDtlMapper.getSalesCloseValidation */
+				COALESCE(SUM(AA.COMPARE_CNT), -1)	AS COMPARE_CNT
+		,		COALESCE(SUM(AA.ERP_TRANS_CNT), -1)	AS ERP_TRANS_CNT
+		,		COALESCE(SUM(AA.ADJ_CLOSE_CNT), -1)	AS ADJ_CLOSE_CNT
+		FROM	(
+				SELECT	CASE WHEN A.PAY_SUM - AESCI.SLS_AMT != 0 THEN 1 WHEN A.ORD_NO IS NULL THEN 1 WHEN AESCI.SLS_PK IS NULL THEN 1 ELSE 0 END AS COMPARE_CNT
+				,		CASE WHEN A.ERP_TRANS_YN = 'N' THEN 1 ELSE 0 END AS ERP_TRANS_CNT
+				,		CASE WHEN A.ADJ_CLOSE_YN = 'Y' THEN 1 ELSE 0 END AS ADJ_CLOSE_CNT
+				FROM	(
+						--판매
+						SELECT	OOD.ORD_NO								--주문번호
+						,		OOD.ORD_SEQ								--주문순번
+						,		OOD.ORD_FNSH_DTM		AS SALE_DTM		--매출일자(주문완료일자)*
+						,		OOAC.PAY_SUM							--BO/BO결제금액(C=A-B)
+						,		OOD.SALE_TRNS_YN		AS ERP_TRANS_YN	--ERP전송여부*
+						,		OOD.SALE_ADJ_CLOSE_YN	AS ADJ_CLOSE_YN	--매출마감여부*
+						,		'1'						AS SLS_KD		--ERP JOIN용 판매구분*
+						FROM	OP_ORD_DTL OOD	--주문상세
+						INNER JOIN (
+								SELECT	ORD_NO
+								,		ORD_SEQ
+								,		SUM(CASE WHEN ADTN_DTL_GB_CD = '50' THEN APLY_ADTN_AMT ELSE 0 END)		AS PAY_SUM		--결제배분/SUM
+								FROM	OP_ORD_ADTN_COST
+								WHERE	ADTN_OCUR_GB_CD = '10'		--부가비용 발생*
+								AND		ADTN_GB_CD IN ('10', '40')	--할인, 결제배분
+								GROUP BY ORD_NO, ORD_SEQ
+						) OOAC	--주문부가비용
+							ON	OOD.ORD_NO = OOAC.ORD_NO
+							AND	OOD.ORD_SEQ = OOAC.ORD_SEQ
+						WHERE	OOD.ORD_FNSH_DTM IS NOT NULL	--*
+						AND		OOD.SALE_TRNS_TGT_YN = 'Y'		--*
+						UNION ALL
+						--환입
+						SELECT	OOD.ORD_NO								--주문번호
+						,		OOD.ORD_SEQ								--주문순번
+						,		OOD.ORD_CNCL_DTM		AS SALE_DTM		--매출일자(주문취소일자)*
+						,		OOAC.PAY_SUM * (-1)						--BO/BO결제금액(C=A-B)
+						,		OOD.RTN_SALE_TRNS_YN	AS ERP_TRANS_YN	--ERP전송여부*
+						,		OOD.RTN_ADJ_CLOSE_YN	AS ADJ_CLOSE_YN	--매출마감여부*
+						,		'6'						AS SLS_KD		--ERP JOIN용 판매구분*
+						FROM	OP_ORD_DTL OOD	--주문상세
+						INNER JOIN (
+								SELECT	ORD_NO
+								,		ORD_SEQ
+								,		SUM(CASE WHEN ADTN_DTL_GB_CD = '50' THEN APLY_ADTN_AMT ELSE 0 END)		AS PAY_SUM		--결제배분/SUM
+								FROM	OP_ORD_ADTN_COST
+								WHERE	ADTN_OCUR_GB_CD = '20'		--부가비용 취소*
+								AND		ADTN_GB_CD IN ('10', '40')	--할인, 결제배분
+								GROUP BY ORD_NO, ORD_SEQ
+						) OOAC	--주문부가비용
+							ON	OOD.ORD_NO = OOAC.ORD_NO
+							AND	OOD.ORD_SEQ = OOAC.ORD_SEQ
+						WHERE	OOD.ORD_CNCL_DTM IS NOT NULL	--*
+						AND		OOD.RTN_SALE_TRNS_TGT_YN = 'Y'	--*
+				) A
+				FULL OUTER JOIN AC_ERP_SALE_COPR_INFO AESCI	--ERP매출대사정보
+					ON	A.ORD_NO||'_'||A.ORD_SEQ = AESCI.SLS_PK
+					AND	A.SLS_KD = AESCI.SLS_KD
+				WHERE	COALESCE(A.SALE_DTM, CAST(AESCI.SLS_DT AS TIMESTAMP)) BETWEEN CAST(#{closeDtm}||'-01' AS TIMESTAMP) AND CAST(#{closeDtm}||'-01' AS TIMESTAMP) + INTERVAL '1 MONTH - 1 MICROSECOND'
+		) AA
+	</select>
+	
+	<select id="selectAdjCloseYn" parameterType="SalesDetailsRequest" resultType="SalesDetailsResponse">
+		SELECT	/* acOpOrdDtlMapper.selectAdjCloseYn */
+		<choose>
+			<when test="erpTransYn != null and erpTransYn != '' and saleGbCd == '10'.toString">
+				SALE_ADJ_CLOSE_YN	AS ADJ_CLOSE_YN 
+			</when>
+			<when test="erpTransYn != null and erpTransYn != '' and saleGbCd == '20'.toString">
+				RTN_ADJ_CLOSE_YN	AS ADJ_CLOSE_YN
+			</when>
+		</choose>
+		FROM	OP_ORD_DTL
+		WHERE	ORD_NO = #{ordNo}
+		AND		ORD_SEQ = #{ordSeq}
+	</select>
+	
+	
+	
+	
+	<!-- 배송비조회 -->
+	<select id="getDeliveryAmountListCount" parameterType="DeliveryAmountRequest" resultType="java.lang.Integer">
+		SELECT	/* acOpOrdDtlMapper.getDeliveryAmountListCount */
+				COUNT(1)
+		FROM	(
+		<include refid="getDeliveryAmount" />
+		) A
+	</select>
+	
+	<select id="getDeliveryAmountList" parameterType="DeliveryAmountRequest" resultType="DeliveryAmountResponse">
+		SELECT	/* acOpOrdDtlMapper.getDeliveryAmountList */
+				A.*
+		,		A.DELI_AMT + A.DELI_AMT_CPN															AS DELI_AMT_SUM	--총배송비
+		,		(SELECT CD_NM FROM ST_STD_CD WHERE GRP_CD = 'LO004' AND CD =  A.DLEX_CHRG_SUB_CD)										AS DELI_PROC_NM	--배송비부담주체
+		,		CASE WHEN A.DLEX_CHRG_SUB_CD = '10' THEN A.DELI_AMT ELSE 0 END						AS DELI_AMT_CUS	--배송비고객부담금
+		,		CASE WHEN A.DLEX_CHRG_SUB_CD = '20' THEN (A.DELI_AMT + A.DELI_AMT_CPN) ELSE 0 END	AS DELI_AMT_OUR	--배송비자사부담금
+		,		CASE WHEN A.DLEX_CHRG_SUB_CD = '30' THEN (A.DELI_AMT + A.DELI_AMT_CPN) ELSE 0 END	AS DELI_AMT_ENTR--배송비업체부담금
+		FROM	(
+		<include refid="getDeliveryAmount" />
+		) A
+		ORDER BY	A.ORD_NO, A.ORD_PROC_SEQ
+		<include refid="paginatedBase" />
+	</select>
+	
+	<sql id="getDeliveryAmount">
+		SELECT	MAX(TO_CHAR(OOD.SALE_DTM, 'YYYYMM'))				AS SALE_YM		--정산년월
+		,		OOD.ORD_NO			--주문번호
+		,		OOD.ORD_PROC_SEQ
+		,		(SELECT CD_NM FROM ST_STD_CD WHERE GRP_CD = 'LO002' AND CD =  OODI.DELI_TYP_CD)			AS DELI_TYP		--배송유형
+		,		MAX(TO_CHAR(OOD.SALE_DTM, 'YYYY-MM-DD'))			AS SALE_DTM		--매출일자
+		,		MAX(PBMM.BRAND_NM)									AS BRAND_NM		--브랜드
+		,		(SELECT CD_NM FROM ST_STD_CD WHERE GRP_CD = 'PR045' AND CD =  MIN(OOD2.YEAR_CNT))		AS YEAR_CNT		--연차
+		,		SUM(CASE
+						WHEN OOAC.ADTN_DTL_GB_CD = '40' AND OOAC.ADTN_OCUR_GB_CD = '10' THEN OOAC.FVR_POLC_APLY_VAL
+						WHEN OOAC.ADTN_DTL_GB_CD = '40' AND OOAC.ADTN_OCUR_GB_CD = '20' THEN OOAC.FVR_POLC_APLY_VAL * (-1)
+						ELSE 0
+					END)								AS DELI_AMT			--배송비(무료배송인 경우가 있으므로 혜택정책적용값으로 배송비 표시)
+		,		SUM(CASE
+						WHEN OOAC.ADTN_DTL_GB_CD = '40' AND OOAC.ADTN_OCUR_GB_CD = '10' THEN OOAC.APLY_ADTN_AMT_1
+						WHEN OOAC.ADTN_DTL_GB_CD = '40' AND OOAC.ADTN_OCUR_GB_CD = '20' THEN OOAC.APLY_ADTN_AMT_1 * (-1)
+						ELSE 0
+					END)								AS DELI_AMT_PG		--PG
+		,		SUM(CASE
+						WHEN OOAC.ADTN_DTL_GB_CD = '40' AND OOAC.ADTN_OCUR_GB_CD = '10' THEN OOAC.APLY_ADTN_AMT_2
+						WHEN OOAC.ADTN_DTL_GB_CD = '40' AND OOAC.ADTN_OCUR_GB_CD = '20' THEN OOAC.APLY_ADTN_AMT_2 * (-1)
+						ELSE 0
+					END)								AS DELI_AMT_MILG	--한섬마일리지
+		,		SUM(CASE
+						WHEN OOAC.ADTN_DTL_GB_CD = '40' AND OOAC.ADTN_OCUR_GB_CD = '10' THEN OOAC.APLY_ADTN_AMT_3
+						WHEN OOAC.ADTN_DTL_GB_CD = '40' AND OOAC.ADTN_OCUR_GB_CD = '20' THEN OOAC.APLY_ADTN_AMT_3 * (-1)
+						ELSE 0
+					END)								AS DELI_AMT_EM		--e-money
+		,		SUM(CASE
+						WHEN OOAC.ADTN_DTL_GB_CD != '40' AND OOAC.ADTN_OCUR_GB_CD = '10' THEN OOAC.APLY_ADTN_AMT
+						WHEN OOAC.ADTN_DTL_GB_CD != '40' AND OOAC.ADTN_OCUR_GB_CD = '20' THEN OOAC.APLY_ADTN_AMT * (-1)
+						ELSE 0
+					END)								AS DELI_AMT_CPN		--배송비(쿠폰)
+		,		MAX(OODI.DLEX_CHRG_SUB_CD)				AS DLEX_CHRG_SUB_CD	--배송비부담주체
+		,		0										AS ETC_DELI_AMT		--수기배송비
+		,		''										AS ETC_DELI_CAUS	--수기사유
+		FROM	(
+				SELECT	ORD_NO
+				,		ORD_PROC_SEQ
+				,		MAX(ORD_FNSH_DTM)	AS SALE_DTM
+				,		'10'				AS ADTN_OCUR_GB_CD
+				,		MIN(DELI_NO)		AS DELI_NO
+				FROM	OP_ORD_DTL OOD
+				GROUP BY ORD_NO, ORD_PROC_SEQ
+				UNION ALL
+				SELECT	ORD_NO
+				,		ORD_PROC_SEQ
+				,		MAX(ORD_CNCL_DTM)	AS SALE_DTM
+				,		'20'				AS ADTN_OCUR_GB_CD
+				,		MIN(DELI_NO)		AS DELI_NO
+				FROM	OP_ORD_DTL OOD
+				GROUP BY ORD_NO, ORD_PROC_SEQ
+		) OOD
+		INNER JOIN	OP_ORD_ADTN_COST OOAC
+			ON	OOD.ORD_NO = OOAC.ORD_NO
+			AND	OOD.ORD_PROC_SEQ = OOAC.ORD_PROC_SEQ
+			AND	OOD.ADTN_OCUR_GB_CD = OOAC.ADTN_OCUR_GB_CD
+			AND	OOAC.ADTN_DTL_GB_CD IN ('14', '15', '16', '40')
+		INNER JOIN	OP_ORD_DELI_INFO OODI
+			ON	OOD.DELI_NO = OODI.DELI_NO
+		INNER JOIN	(
+				SELECT	ORD_NO
+				,		ORD_PROC_SEQ
+				,		ORD_SEQ
+				,		BRAND_NO
+				,		CASE WHEN YEAR_CNT = '0' THEN '10' ELSE '20' END						AS YEAR_CNT
+				,		ROW_NUMBER() OVER (PARTITION BY ORD_NO, ORD_PROC_SEQ ORDER BY ORD_SEQ)	AS ROW_NUM
+				FROM	OP_ORD_DTL
+		) OOD2
+			ON	OOD.ORD_NO = OOD2.ORD_NO
+			AND	OOD.ORD_PROC_SEQ = OOD2.ORD_PROC_SEQ
+			AND	OOD2.ROW_NUM = '1'
+		INNER JOIN	PR_BRAND_MST_ML PBMM
+			ON	OOD2.BRAND_NO = PBMM.BRAND_NO
+			AND	PBMM.LANG_CD = #{langCd}
+		WHERE	1=1
+		<if test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+		AND 	OOD.SALE_DTM BETWEEN CAST(#{startDate} AS TIMESTAMP) AND CAST(#{endDate}||' 235959.999999' AS TIMESTAMP)
+		</if>
+		<if test="ordNo != null and ordNo != ''">
+		AND 	OOD.ORD_NO LIKE '%'||#{ordNo}||'%'
+		</if>
+		<if test="deliTyp != null and deliTyp != ''">
+		AND 	OODI.DELI_TYP_CD = #{deliTyp}
+		</if>
+		<if test="dlexChrgSubCd != null and dlexChrgSubCd != ''">
+		AND 	OODI.DLEX_CHRG_SUB_CD = #{dlexChrgSubCd}
+		</if>
+		<if test="yearCnt != null and yearCnt != ''">
+		AND 	OOD2.YEAR_CNT = #{yearCnt}
+		</if>
+		<if test="brandNo != null and brandNo != ''">
+		AND		OOD2.BRAND_NO = #{brandNo}
+		</if>
+		GROUP BY OOD.ORD_NO, OOD.ORD_PROC_SEQ, OODI.DELI_TYP_CD
+	</sql>
+	
+	
+	
+	
+	<!-- 업체매출수수료조회 -->
+	<select id="getVendorCommissionListCount" parameterType="VendorCommissionRequest" resultType="java.lang.Integer">
+		SELECT	/* acOpOrdDtlMapper.getVendorCommissionListCount */
+				COUNT(1)
+		FROM	(
+		<include refid="getVendorCommission" />
+		) AAA
+	</select>
+	
+	<select id="getVendorCommissionList" parameterType="VendorCommissionRequest" resultType="VendorCommissionResponse">
+		SELECT	/* acOpOrdDtlMapper.getVendorCommissionList */
+				*
+		FROM	(
+		<include refid="getVendorCommission" />
+		) AAA
+		ORDER BY	AAA.ENTR_NM DESC
+		<include refid="paginatedBase" />
+	</select>
+	
+	<sql id="getVendorCommission">
+		SELECT	AA.*
+		,		DLEX.DLEX_ENTR								AS DLEX_ENTR	--택배비
+		,		AA.NOR_PRC - AA.CPN_SUM_ENTR - AA.CMSN_PRC	AS ENTR_PRC		--지급예정금액
+		FROM	(
+				SELECT	A.ENTR_NO
+				,		MAX(EEB.ENTR_NM)	AS ENTR_NM		--업체
+				,		SUM(A.NOR_PRC)		AS NOR_PRC		--정상금액(A)
+				,		SUM(A.SALE_PRC)		AS SALE_PRC		--판매금액
+				,		SUM(A.CPN_SUM)		AS CPN_SUM		--쿠폰금액
+				,		SUM(A.CPN_SUM_ENTR)	AS CPN_SUM_ENTR	--쿠폰분담금(B)
+				,		SUM(A.PAY_SUM)		AS PAY_SUM		--BO결제금액
+				,		SUM(A.PAY_PG)		AS PAY_PG		--PG결제금액
+				,		SUM(A.PAY_MILG)		AS PAY_MILG		--마일리지
+				,		SUM(A.PAY_EM)		AS PAY_EM		--e-money
+				,		SUM(A.PAY_HP)		AS PAY_HP		--H.Point
+				,		SUM(A.CMSN_PRC)		AS CMSN_PRC		--매출수수료(C)
+				FROM	(
+						--판매
+						SELECT	OOD.ENTR_NO
+						,		OOD.NOR_PRC							--정상금액(A)
+						,		OOD.DC_STD_PRC		AS SALE_PRC		--판매금액
+						,		OOAC.CPN_SUM						--쿠폰금액
+						,		OOAC.CPN_SUM_ENTR					--쿠폰분담금(B)
+						,		OOAC.PAY_SUM						--BO결제금액
+						,		OOAC.PAY_SUM - (OOAC.PAY_MILG + OOAC.PAY_EM + OOAC.PAY_HP)	AS PAY_PG	--PG결제금액
+						,		OOAC.PAY_MILG						--마일리지
+						,		OOAC.PAY_EM							--e-money
+						,		OOAC.PAY_HP							--H.Point
+						,		OOD.NOR_PRC * ACCI.CMSN_RATE / 100							AS CMSN_PRC	--매출수수료(C)
+						FROM	OP_ORD_DTL OOD	--주문상세
+						INNER JOIN (
+								SELECT	ORD_NO
+								,		ORD_SEQ
+								,		SUM(CASE WHEN ADTN_GB_CD = '10' THEN APLY_ADTN_AMT ELSE 0 END)							AS CPN_SUM		--쿠폰금액
+								,		SUM(CASE WHEN ADTN_GB_CD = '10' THEN APLY_ADTN_AMT * ENTR_CHRG_RATE / 100 ELSE 0 END)	AS CPN_SUM_ENTR	--쿠폰분담금
+								--
+								,		SUM(CASE WHEN ADTN_DTL_GB_CD = '50' THEN APLY_ADTN_AMT ELSE 0 END)		AS PAY_SUM		--결제배분/SUM
+								,		SUM(CASE WHEN ADTN_DTL_GB_CD = '52' THEN APLY_ADTN_AMT ELSE 0 END)		AS PAY_HP		--결제배분/H.Point
+								,		SUM(CASE WHEN ADTN_DTL_GB_CD = '53' THEN APLY_ADTN_AMT ELSE 0 END)		AS PAY_MILG		--결제배분/마일리지
+								,		SUM(CASE WHEN ADTN_DTL_GB_CD = '54' THEN APLY_ADTN_AMT ELSE 0 END)		AS PAY_EM		--결제배분/e-money
+								FROM	OP_ORD_ADTN_COST
+								WHERE	ADTN_OCUR_GB_CD = '10'		--부가비용 발생*
+								AND		ADTN_GB_CD IN ('10', '40')	--할인, 결제배분
+								GROUP BY ORD_NO, ORD_SEQ
+						) OOAC	--주문부가비용
+							ON	OOD.ORD_NO = OOAC.ORD_NO
+							AND	OOD.ORD_SEQ = OOAC.ORD_SEQ
+						LEFT OUTER JOIN AC_CLM_CMSN_INFO ACCI	--청구수수료정보
+							ON	OOD.ORD_FNSH_DTM BETWEEN ACCI.APLY_STR_DTM AND ACCI.APLY_END_DTM
+							AND	OOD.ENTR_NO = ACCI.ENTR_NO
+							AND	OOD.TAX_GB_CD = ACCI.TAX_GB_CD
+						WHERE	OOD.ORD_FNSH_DTM IS NOT NULL	--*
+						AND		OOD.SALE_TRNS_TGT_YN = 'Y'		--*
+						<if test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+						AND 	OOD.ORD_FNSH_DTM BETWEEN CAST(#{startDate} AS TIMESTAMP) AND CAST(#{endDate}||' 235959.999999' AS TIMESTAMP)
+						</if>
+						<if test="adjCloseYn != null and adjCloseYn != ''">
+						AND 	OOD.SALE_ADJ_CLOSE_YN = #{adjCloseYn}
+						</if>
+						UNION ALL
+						--환입
+						SELECT	OOD.ENTR_NO
+						,		OOD.NOR_PRC * (-1)			--정상금액(A)
+						,		OOD.DC_STD_PRC * (-1)												AS SALE_PRC	--판매금액
+						,		OOAC.CPN_SUM * (-1)			--쿠폰금액
+						,		OOAC.CPN_SUM_ENTR * (-1)	--쿠폰분담금(B)
+						,		OOAC.PAY_SUM * (-1)			--BO결제금액
+						,		(OOAC.PAY_SUM - (OOAC.PAY_MILG + OOAC.PAY_EM + OOAC.PAY_HP)) * (-1)	AS PAY_PG	--PG결제금액
+						,		OOAC.PAY_MILG * (-1)		--마일리지
+						,		OOAC.PAY_EM * (-1)			--e-money
+						,		OOAC.PAY_HP * (-1)			--H.Point
+						,		OOD.NOR_PRC * ACCI.CMSN_RATE / 100 * (-1)							AS CMSN_PRC	--매출수수료(C)
+						FROM	OP_ORD_DTL OOD	--주문상세
+						LEFT OUTER JOIN (
+								SELECT	ORD_NO
+								,		ORD_SEQ
+								,		SUM(CASE WHEN ADTN_GB_CD = '10' THEN APLY_ADTN_AMT ELSE 0 END)							AS CPN_SUM		--쿠폰금액
+								,		SUM(CASE WHEN ADTN_GB_CD = '10' THEN APLY_ADTN_AMT * ENTR_CHRG_RATE / 100 ELSE 0 END)	AS CPN_SUM_ENTR	--쿠폰분담금
+								--
+								,		SUM(CASE WHEN ADTN_DTL_GB_CD = '50' THEN APLY_ADTN_AMT ELSE 0 END)		AS PAY_SUM		--결제배분/SUM
+								,		SUM(CASE WHEN ADTN_DTL_GB_CD = '52' THEN APLY_ADTN_AMT ELSE 0 END)		AS PAY_HP		--결제배분/H.Point
+								,		SUM(CASE WHEN ADTN_DTL_GB_CD = '53' THEN APLY_ADTN_AMT ELSE 0 END)		AS PAY_MILG		--결제배분/마일리지
+								,		SUM(CASE WHEN ADTN_DTL_GB_CD = '54' THEN APLY_ADTN_AMT ELSE 0 END)		AS PAY_EM		--결제배분/e-money
+								FROM	OP_ORD_ADTN_COST
+								WHERE	ADTN_OCUR_GB_CD = '20'		--부가비용 취소*
+								AND		ADTN_GB_CD IN ('10', '40')	--할인, 결제배분
+								GROUP BY ORD_NO, ORD_SEQ
+						) OOAC	--주문부가비용
+							ON	OOD.ORD_NO = OOAC.ORD_NO
+							AND	OOD.ORD_SEQ = OOAC.ORD_SEQ
+						LEFT OUTER JOIN AC_CLM_CMSN_INFO ACCI	--청구수수료정보
+							ON	OOD.ORD_FNSH_DTM BETWEEN ACCI.APLY_STR_DTM AND ACCI.APLY_END_DTM
+							AND	OOD.ENTR_NO = ACCI.ENTR_NO
+							AND	OOD.TAX_GB_CD = ACCI.TAX_GB_CD
+						WHERE	OOD.ORD_CNCL_DTM IS NOT NULL	--*
+						AND		OOD.RTN_SALE_TRNS_TGT_YN = 'Y'	--*
+						<if test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+						AND 	OOD.ORD_CNCL_DTM BETWEEN CAST(#{startDate} AS TIMESTAMP) AND CAST(#{endDate}||' 235959.999999' AS TIMESTAMP)
+						</if>
+						<if test="adjCloseYn != null and adjCloseYn != ''">
+						AND 	OOD.RTN_ADJ_CLOSE_YN = #{adjCloseYn}
+						</if>
+				) A
+				INNER JOIN ET_ENTR_BASE EEB	--협력사기본
+					ON	A.ENTR_NO = EEB.ENTR_NO
+				GROUP BY A.ENTR_NO
+		) AA
+		LEFT OUTER JOIN (
+				SELECT	OOAC.ENTR_NO
+				,		SUM(CASE OOD.ADTN_OCUR_GB_CD WHEN '10' THEN OOAC.APLY_ADTN_AMT ELSE OOAC.APLY_ADTN_AMT * (-1) END)	AS DLEX_ENTR 
+				FROM	(
+						SELECT	ORD_NO, ORD_PROC_SEQ, ADTN_OCUR_GB_CD
+						FROM	(
+								--판매
+								SELECT	ORD_NO
+								,		ORD_PROC_SEQ
+								,		ORD_FNSH_DTM		AS SALE_DTM
+								,		SALE_ADJ_CLOSE_YN	AS ADJ_CLOSE_YN
+								,		'10'				AS ADTN_OCUR_GB_CD	--부가비용발생
+								FROM	OP_ORD_DTL
+								WHERE	ORD_FNSH_DTM IS NOT NULL
+								UNION ALL
+								--환입
+								SELECT	ORD_NO
+								,		ORD_PROC_SEQ
+								,		ORD_CNCL_DTM
+								,		RTN_ADJ_CLOSE_YN
+								,		'20'				AS ADTN_OCUR_GB_CD	--부가비용취소
+								FROM	OP_ORD_DTL
+								WHERE	ORD_CNCL_DTM IS NOT NULL
+						) OP_ORD_DTL
+						<if test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+						WHERE 	SALE_DTM BETWEEN CAST(#{startDate} AS TIMESTAMP) AND CAST(#{endDate}||' 235959.999999' AS TIMESTAMP)
+						</if>
+						<if test="adjCloseYn != null and adjCloseYn != ''">
+						AND 	ADJ_CLOSE_YN = #{adjCloseYn}
+						</if>
+						GROUP BY ORD_NO, ORD_PROC_SEQ, ADTN_OCUR_GB_CD
+				) OOD
+				INNER JOIN OP_ORD_ADTN_COST OOAC
+					ON	OOD.ORD_NO = OOAC.ORD_NO
+					AND	OOD.ORD_PROC_SEQ = OOAC.ORD_PROC_SEQ
+					AND	OOD.ADTN_OCUR_GB_CD = OOAC.ADTN_OCUR_GB_CD
+				WHERE	OOAC.ADTN_GB_CD = '30'		--비용
+				AND		OOAC.ADTN_DTL_GB_CD = '40'	--배송비
+				GROUP BY OOAC.ENTR_NO
+		) DLEX
+			ON	AA.ENTR_NO = DLEX.ENTR_NO
+		WHERE	1=1
+		<if test="entrNo != null and entrNo != ''">
+		AND 	AA.ENTR_NO = #{entrNo}
+		</if>
+	</sql>
+	
+	
+	
+	
+	<!-- 제휴사수수료조회 -->
+	<select id="getCooperCommissionListCount" parameterType="CooperCommissionRequest" resultType="java.lang.Integer">
+		SELECT	/* acOpOrdDtlMapper.getCooperCommissionListCount */
+				COUNT(1)
+		FROM	(
+				SELECT	CCB.CHL_NO, CCDI.CHL_DTL_NO, EEB.ENTR_NO
+				<include refid="getCooperCommission" />
+				<include refid="getCooperCommissionWhere" />
+				GROUP BY	CCB.CHL_NO, CCDI.CHL_DTL_NO, EEB.ENTR_NO
+		) A
+	</select>
+	
+	<select id="getCooperCommissionList" parameterType="CooperCommissionRequest" resultType="CooperCommissionResponse">
+		SELECT	/* acOpOrdDtlMapper.getCooperCommissionList */
+				EEB.ENTR_NO
+		,		MAX(EEB.ENTR_NM)		AS ENTR_NM
+		,		MAX(EEB.BMAN_NO)		AS BMAN_NO
+		,		(SELECT CD_NM FROM ST_STD_CD WHERE GRP_CD = 'CH002' AND CD =  MAX(CCB.CHL_TYP_CD))	AS CHL_TYP_CD
+		,		MAX(CCB.CHL_NM)			AS CHL_NM
+		,		CCDI.CHL_DTL_NO
+		,		MAX(CCDI.CHL_DTL_NM)	AS CHL_DTL_NM
+		,		SUM(OOAC.APLY_ADTN_AMT)	AS SALE_PRC
+		,		SUM(ROUND(OOAC.APLY_ADTN_AMT / 1.1 * CCCI.CMSN_RT_AMT / 100))	AS CMSN_AMT
+		,		#{startDate}			AS START_DATE
+		,		#{endDate}				AS END_DATE
+		,		#{adjCloseYn}			AS ADJ_CLOSE_YN
+		<include refid="getCooperCommission" />
+		<include refid="getCooperCommissionWhere" />
+		GROUP BY	CCB.CHL_NO, CCDI.CHL_DTL_NO, EEB.ENTR_NO
+		ORDER BY	ENTR_NM DESC
+		<include refid="paginatedBase" />
+	</select>
+	
+	<sql id="getCooperCommission">
+		FROM	(
+				SELECT	ORD_NO
+				,		ORD_SEQ
+				,		CHL_NO
+				,		CHL_DTL_NO
+				,		ORD_FNSH_DTM		AS SALE_DTM
+				,		ORD_QTY
+				,		NOR_PRC
+				,		DC_STD_PRC
+				,		'10'				AS SALE_GB_CD
+				,		SALE_ADJ_CLOSE_YN	AS ADJ_CLOSE_YN
+				FROM	OP_ORD_DTL
+				WHERE	ORD_FNSH_DTM IS NOT NULL
+				AND		SALE_TRNS_TGT_YN = 'Y'	--매출
+				UNION ALL
+				SELECT	ORD_NO
+				,		ORD_SEQ
+				,		CHL_NO
+				,		CHL_DTL_NO
+				,		ORD_CNCL_DTM		AS SALE_DTM
+				,		CNCL_QTY * (-1)		AS ORD_QTY
+				,		NOR_PRC
+				,		DC_STD_PRC * (-1)
+				,		'20'				AS SALE_GB_CD
+				,		RTN_ADJ_CLOSE_YN	AS ADJ_CLOSE_YN
+				FROM	OP_ORD_DTL
+				WHERE	ORD_CNCL_DTM IS NOT NULL
+				AND		RTN_SALE_TRNS_TGT_YN = 'Y'	--환입
+		) OOD
+		INNER JOIN	OP_ORD_ADTN_COST OOAC
+			ON	OOD.ORD_NO = OOAC.ORD_NO
+			AND	OOD.ORD_SEQ = OOAC.ORD_SEQ
+			AND	OOD.SALE_GB_CD = OOAC.ADTN_OCUR_GB_CD
+			AND	OOAC.ADTN_GB_CD = '40'
+			AND	OOAC.ADTN_DTL_GB_CD IN ('50', '51')
+		INNER JOIN CC_CHL_BASE CCB
+			ON	OOD.CHL_NO = CCB.CHL_NO
+		INNER JOIN CC_CHL_DTL_INFO CCDI
+			ON	OOD.CHL_NO = CCDI.CHL_NO
+			AND	OOD.CHL_DTL_NO = CCDI.CHL_DTL_NO
+		INNER JOIN CC_CHL_CMSN_INFO CCCI
+			ON	OOD.CHL_DTL_NO = CCCI.CHL_DTL_NO
+			AND	OOD.SALE_DTM BETWEEN CAST(CCCI.APLY_STR_DT AS TIMESTAMP) AND CAST(CCCI.APLY_END_DT|| ' 235959.999999' AS TIMESTAMP)
+		INNER JOIN ET_ENTR_BASE EEB
+			ON	CCB.ENTR_NO = EEB.ENTR_NO
+	</sql>
+	
+	<sql id="getCooperCommissionWhere">
+		WHERE	1=1
+		<if test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+		AND 	OOD.SALE_DTM BETWEEN CAST(#{startDate} AS TIMESTAMP) AND CAST(#{endDate}||' 235959.999999' AS TIMESTAMP)
+		</if>
+		<if test="adjCloseYn != null and adjCloseYn != ''">
+		AND 	OOD.ADJ_CLOSE_YN = #{adjCloseYn}
+		</if>
+		<if test="chlTypCd != null and chlTypCd != ''">
+		AND 	CCB.CHL_TYP_CD = #{chlTypCd}
+		</if>
+		<if test="chlNm != null and chlNm != ''">
+		AND		CCB.CHL_NM LIKE '%'||#{chlNm}||'%'
+		</if>
+		<if test="entrNo != null and entrNo != ''">
+		AND 	CCB.ENTR_NO = #{entrNo}
+		</if>
+	</sql>
+	
+	<select id="getCooperCommissionDetailListCount" parameterType="CooperCommissionRequest" resultType="java.lang.Integer">
+		SELECT	/* acOpOrdDtlMapper.getCooperCommissionDetailListCount */
+				COUNT(1)
+		<include refid="getCooperCommission" />
+		<include refid="getCooperCommissionDetailWhere" />
+	</select>
+	
+	<select id="getCooperCommissionDetailList" parameterType="CooperCommissionRequest" resultType="CooperCommissionResponse">
+		SELECT	/* acOpOrdDtlMapper.getCooperCommissionDetailList */
+				EEB.ENTR_NO
+		,		EEB.ENTR_NM
+		,		EEB.BMAN_NO
+		,		(SELECT CD_NM FROM ST_STD_CD WHERE GRP_CD = 'CH002' AND CD =  CCB.CHL_TYP_CD)	AS CHL_TYP_CD
+		,		CCB.CHL_NM
+		,		CCDI.CHL_DTL_NM
+		,		OOD.ORD_NO
+		,		OOD.ORD_SEQ
+		,		TO_CHAR(OOD.SALE_DTM, 'YYYY-MM-DD')			AS SALE_DTM
+		,		(SELECT CD_NM FROM ST_STD_CD WHERE GRP_CD = 'AC004' AND CD =  OOD.SALE_GB_CD)	AS SALE_GB
+		,		OOD.ORD_QTY
+		,		OOD.DC_STD_PRC								AS ORG_SALE_PRC
+		,		OOAC.APLY_ADTN_AMT							AS SALE_PRC
+		,		ROUND(OOAC.APLY_ADTN_AMT / 1.1 * CCCI.CMSN_RT_AMT / 100)	AS CMSN_AMT
+		,		CCCI.CMSN_RT_AMT||'%'						AS CMSN_RT_AMT
+		,		OOD.NOR_PRC * CCCI.CMSN_RT_AMT / 100		AS CMSN_AMT
+		<include refid="getCooperCommission" />
+		<include refid="getCooperCommissionDetailWhere" />
+		ORDER BY	OOD.ORD_NO, OOD.ORD_SEQ
+		<include refid="paginatedBase" />
+	</select>
+	
+	<sql id="getCooperCommissionDetailWhere">
+		WHERE	1=1
+		<if test="detailGrid_startDate != null and detailGrid_startDate != '' and detailGrid_endDate != null and detailGrid_endDate != ''">
+		AND 	OOD.SALE_DTM BETWEEN CAST(#{detailGrid_startDate} AS TIMESTAMP) AND CAST(#{detailGrid_endDate}||' 235959.999999' AS TIMESTAMP)
+		</if>
+		<if test="detailGrid_adjCloseYn != null and detailGrid_adjCloseYn != ''">
+		AND 	OOD.ADJ_CLOSE_YN = #{detailGrid_adjCloseYn}
+		</if>
+		<if test="detailGrid_chlDtlNo != null and detailGrid_chlDtlNo != ''">
+		AND 	CCDI.CHL_DTL_NO = #{detailGrid_chlDtlNo}
+		</if>
+	</sql>
+</mapper>
